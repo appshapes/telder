@@ -86,22 +86,23 @@ project-level switch to refuse `.telder.md` (display-only blast radius did not j
 
 ## State at the end of the first session
 
-Everything is written and uncommitted in `/Users/rjae/Development/appshapes/telder` (git initialised, files
-staged, no commit, no remote). Green: `make test` (27 tests), `make lint`, `make plugin-check`,
-`make plugin-validate`; `make hook-smoke` produced a real summary; the finished plugin was run headless and
-interactively with options set through `--settings`.
+Two commits on `master` of the public `github.com/appshapes/telder` (created this session, private
+vulnerability reporting on): `9ebb6d5 45: Create the tldr plugin` and `6f05619 45: Let the person adjust the
+instructions`. Card 45 on the AppShapes board. Green locally: `make test` (39 tests), `make lint`,
+`make plugin-check`, `make plugin-validate`; `make hook-smoke` produced a real summary; the finished plugin was
+run headless and interactively with options set through `--settings`. The first CI run failed on the runner's
+shellcheck 0.9.0 (SC2015 on `A && B || C`, which the local 0.11 does not report); the second commit fixed it and its run
+(36756679977) was green on both jobs. The hand-off for the next session is `handoff-2026-09-30.md`.
 
 ## Open
 
-- The Trello card number for the first commit.
-- Rjae wants to discuss letting the person adjust the instructions that drive the summary (and `/tldr`) once
+- (Done, second commit.) Rjae wanted to discuss letting the person adjust the instructions that drive the summary (and `/tldr`) once
   the initial implementation is done. Candidate design: an `instructions_file` option (userConfig type `file`,
   user-level, read by the hook and quoted by the skill) plus a per-project `.tldr.md` read from the hook's
   `cwd`, each either replacing or extending the built-in guidance; plugin options are user-level only (Claude
   Code reads `pluginConfigs` from user, `--settings` and managed settings, never project settings), which is
   why a project needs a file.
-- Create `appshapes/telder` on GitHub and push? (`ci.yml` and `release.yml` are written for it.)
-- Port the agentic loop and the release-notes email, or not.
+- Port the agentic loop and the release-notes email, or not (Rjae, 2026-09-30: wait for now).
 - A `claude plugin eval` suite (`evals/`) once there is something to score.
 - Not measured: Windows (the shebang and `python3` assumption), the Desktop app and IDE extensions (their
   `MessageDisplay` rendering), a reply made of several long text blocks in one turn.

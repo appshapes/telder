@@ -8,6 +8,8 @@
 - @./CLAUDE.user.md (optional, local-only, gitignored — absent in fresh clones)
 
 # Telder
+- Start here: `.context/plans/handoff-2026-09-30.md` (state) and `.context/plans/telder-build-2026-09-30.md`
+  (every measurement and decision).
 - Telder is the product; `tldr` is the plugin (`/plugin install tldr@telder`). The plugin is one command hook on
   `MessageDisplay` (display-only: the summary never enters Claude's context; measured 2026-09-30, see
   `.context/plans/telder-build-2026-09-30.md` for why not `Stop` and never a `prompt` hook), one Python script and its
@@ -37,8 +39,10 @@
   `/trello-read`; `docs/claude-code-usage.md` is the usage guide.
 - `make test` needs only `python3`; `make plugin-check` also needs `shellcheck`; `make plugin-validate` needs a
   `claude` on `PATH` (login-free). Run `make test plugin-check plugin-validate` before pushing anything under
-  `plugin/`. The CI runner's shellcheck may disagree with the local one; when it does, the runner's version, printed
-  by `ci.yml`'s inventory step, wins.
+  `plugin/`. CI's Ubuntu runner has shellcheck **0.9.0** (printed by `ci.yml`'s inventory step, run 36756274811) and
+  this machine has 0.11, and versions disagree (0.9.0 reported SC2015 for `A && B || C`; 0.11 did not): before
+  pushing a shell file run `docker run --rm -v "$PWD:/mnt" -w /mnt koalaman/shellcheck:v0.9.0 -s sh <files>` as
+  well as the local one, and re-pin this sentence whenever the inventory step prints a different version.
 - Releases: `make release version=X.Y.Z card=<n>` bumps `plugin/.claude-plugin/plugin.json`, moves the
   `[Unreleased]` section of `CHANGELOG.md` under the new version, commits through the push chain, tags `vX.Y.Z` and
   pushes the tag; `release.yml` then publishes the GitHub release with that changelog section as its notes. A
