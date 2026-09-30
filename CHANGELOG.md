@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-09-30
+
 ### Changed
 
 - **Higher defaults.** `min_words` is now `300` (was `120`): a reply needs about three hundred words of prose

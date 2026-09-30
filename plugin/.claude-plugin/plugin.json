@@ -1,6 +1,6 @@
 {
   "name": "tldr",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A TL;DR under every long reply: the most important points first, as a plain list, in simple language, for a reader with no time.",
   "author": {
     "name": "appshapes"
