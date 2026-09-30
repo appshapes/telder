@@ -23,4 +23,6 @@ a new release and users move to it with `/reload-plugins`.
 The hook receives the text of each reply Claude Code shows you, and nothing else from your session: not your
 prompts, not the transcript file, not your credentials. It sends that text to one model call through your own
 `claude` login, as a nested `claude -p`, to write the summary; the summary is display-only and never enters the
-conversation Claude sees. The script writes no file under your project and keeps no copy of any reply.
+conversation Claude sees. The script writes no file under your project and keeps no copy of any reply. It reads one file from your
+project when it exists, `.telder.md`, the project's instructions for the summary; that file can change the
+wording of a summary and nothing else.

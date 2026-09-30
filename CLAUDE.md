@@ -23,6 +23,11 @@
 - Never put a secret in the hook's output, in a log line, on a card or in a file under the project directory. The
   script never reads the transcript file and never reads `$CLAUDE_CONFIG_DIR/sessions/*.key`; the reply text it
   summarizes reaches it on stdin from Claude Code and goes to the summarizing model and nowhere else.
+- The instructions the summarizing model follows are layered in the script (`instruction_parts`): the plugin's
+  own, the `instructions` option, the `instructions_file` option, the project's `.telder.md`, then the fixed
+  format rules, which the parser depends on and no layer may remove. The `/tldr` skill gets the same layers
+  from `tldr-hook instructions` with the option values as arguments (a model's Bash command carries no
+  `CLAUDE_PLUGIN_OPTION_*`), the inline text through a quoted heredoc so any content survives.
 - Never hardcode `~/.claude`; use `CLAUDE_CONFIG_DIR ?? ~/.claude`. State (a mute, a cache) lives under
   `CLAUDE_PLUGIN_DATA`, never under `CLAUDE_PLUGIN_ROOT`, which changes on every update.
 - Every skill is reachable by the model: never add `disable-model-invocation` to a skill under `plugin/skills/`

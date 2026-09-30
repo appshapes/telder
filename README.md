@@ -13,6 +13,7 @@ model writes it through your own `claude` login. Nothing to configure, no API ke
 | install the plugin | [Install](#install) |
 | see what a TL;DR looks like | [What you see](#what-you-see) |
 | get a TL;DR of the last reply right now, or pause the summaries | [`/tldr`](#tldr) |
+| change what the summary focuses on, its language, its voice | [Change the instructions](#change-the-instructions) |
 | change how long a reply must be, how many points, which model | [Options](#options) |
 | update the plugin | [Update](#update) |
 | know what the plugin sees, and where it goes | [`plugin/README.md` › What the plugin sees](plugin/README.md#what-the-plugin-sees) |
@@ -48,7 +49,9 @@ does not answer in time, the reply is shown without one.
 
 ## `/tldr`
 
-- `/tldr` — Claude writes a TL;DR of its previous reply, in the chat.
+- `/tldr` — Claude writes a TL;DR of its previous reply, in the chat, following the same instructions as the
+  automatic ones.
+- `/tldr instructions` — shows the instructions the summaries follow, and where each part comes from.
 - `/tldr off` — no more automatic summaries on this machine, in every session, until `/tldr on`.
 - `/tldr on` — start them again.
 - `/tldr status` — which it is.
@@ -71,6 +74,30 @@ and set them there.
 | `model` | `claude-opus-5-5` | the model that writes the summary, by its full name: `claude-sonnet-5-5` is a little faster and cheaper, `claude-fable-5-1` a little slower, `claude-haiku-4-5-20251001` the cheapest but slow and uneven when measured |
 | `heading` | `TL;DR` | the line above the points |
 | `timeout` | `40` | seconds to wait for the summary before showing the reply without one |
+| `instructions` | *(empty)* | a sentence or a few of your own, added to the plugin's instructions |
+| `instructions_file` | *(empty)* | absolute path to a text file of your own instructions, at most 8 KB, added after `instructions` |
+| `instructions_mode` | `add` | `add` keeps the plugin's own instructions before yours; `replace` drops them |
+
+## Change the instructions
+
+The summary follows instructions in layers, in this order:
+
+1. The plugin's own: salient points, simple and concise language, few or no abbreviations, no mannered prose,
+   highest priority first, short. `instructions_mode: replace` drops this layer.
+2. Your `instructions` option: a sentence or a few, for example:
+
+   ```
+   Set the tldr plugin's instructions to: Write it in French. Say first what I must do next.
+   ```
+
+3. Your `instructions_file` option: a text file, for longer instructions. It is read at every summary, so an
+   edit takes effect at once.
+4. The project's `.telder.md`, at the root of the folder you opened Claude Code in, for instructions a team
+   shares: for example `Name the files that changed.` It is always added.
+5. The format rules, which cannot be changed: a list of at most `max_points` points, one short sentence each.
+
+`/tldr instructions` prints the layers in effect. A file that is missing, empty, not text or over 8 KB is
+   ignored, with one line in Claude Code's debug log.
 
 ## Update
 

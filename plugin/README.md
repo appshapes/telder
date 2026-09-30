@@ -17,7 +17,8 @@ The front [README](../README.md) has the install steps and the options; this pag
   the salient points in simple and concise language, few or no abbreviations, no mannered prose, highest priority
   first, an unordered list of at most `max_points` points, short. If the reply is already a short list, or only a
   question to you, the model answers with nothing and nothing is added.
-- **One skill**, `/tldr`: with no argument, Claude writes a TL;DR of its previous reply itself; `off`, `on` and
+- **One skill**, `/tldr`: with no argument, Claude writes a TL;DR of its previous reply itself, under the same
+  instructions as the automatic ones; `instructions` prints those instructions in layers; `off`, `on` and
   `status` control the automatic summaries on this machine.
 - **No MCP server, no channel, no binary, no `bin/`.** CI enforces the file list.
 
@@ -42,6 +43,22 @@ Fable 5.1 in four to six; Haiku 4.5 took seven to forty seconds and once ran pas
 because the points and their order are a judgement, and one second is cheap. The nested call counts against your
 plan's usage like any other short turn of that model.
 
+## The instructions, in layers
+
+The system prompt of the nested call is built from parts, in this order, joined by blank lines: the plugin's
+own instructions (unless `instructions_mode` is `replace`), the `instructions` option, the `instructions_file`
+option's text, the project's `.telder.md` (read from `CLAUDE_PROJECT_DIR`, which Claude Code exports to its
+hooks, else the hook input's `cwd`), and last the format rules, which the script's parser depends on and which
+no layer can remove. A file is read at every summary, must be UTF-8 and at most 8 KB, and is ignored with a
+debug line otherwise; a missing `.telder.md` is silent. `replace` with nothing else given falls back to the
+plugin's own, with a debug line. `tldr-hook instructions …` prints the same layers with their sources; the
+`/tldr` skill runs it with the option values as arguments, because the model's Bash commands do not carry the
+`CLAUDE_PLUGIN_OPTION_*` variables the hook gets.
+
+A `.telder.md` comes from the repository you opened, so treat it as you treat that repository's other files:
+it can change the wording of the summary under a reply, and nothing else, because the nested call has no
+tools and the summary never reaches Claude.
+
 ## When nothing is added
 
 - The reply has fewer than `min_words` words of prose.
@@ -52,7 +69,8 @@ plan's usage like any other short turn of that model.
 
 ## Options
 
-Five, all optional: `min_words`, `max_points`, `model`, `heading` and `timeout`. Their meanings and defaults are
+Eight, all optional: `min_words`, `max_points`, `model`, `heading`, `timeout`, `instructions`, `instructions_file`
+and `instructions_mode`. Their meanings and defaults are
 in the front [README › Options](../README.md#options). The plugin reads them from the `CLAUDE_PLUGIN_OPTION_*`
 variables Claude Code gives its hooks; a value outside its range is clamped, a value that is not a number keeps
 the default and says so in the debug log.

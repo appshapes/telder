@@ -49,6 +49,24 @@
       "default": 40,
       "min": 10,
       "max": 120
+    },
+    "instructions": {
+      "type": "string",
+      "title": "Your instructions for the summary",
+      "description": "A sentence or a few, added to the plugin's own instructions: for example \"Write it in French.\" or \"Say first what I must do next.\" The format stays a list.",
+      "default": ""
+    },
+    "instructions_file": {
+      "type": "file",
+      "title": "A file of instructions for the summary",
+      "description": "Absolute path to a UTF-8 text file (at most 8 KB), added after the plugin's own instructions and your instructions option. Read at every summary, so an edit takes effect at once.",
+      "default": ""
+    },
+    "instructions_mode": {
+      "type": "string",
+      "title": "add or replace",
+      "description": "add (the default) keeps the plugin's own instructions and adds yours after them; replace drops the plugin's own, so yours stand alone. A project's .telder.md is always added, and the format rules always apply.",
+      "default": "add"
     }
   }
 }

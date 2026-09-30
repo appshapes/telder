@@ -42,7 +42,9 @@ case $card in
   '')        die "usage: make release version=X.Y.Z card=<n>: card is the AppShapes Trello card the release belongs to" ;;
   *[!0-9]*)  die "card must be a Trello card number (got '$card')" ;;
 esac
-[ -f "$plugin_json" ] && [ -f "$changelog" ] || die "run this from the repository root (no $plugin_json / $changelog here)"
+if [ ! -f "$plugin_json" ] || [ ! -f "$changelog" ]; then
+  die "run this from the repository root (no $plugin_json / $changelog here)"
+fi
 git rev-parse --git-dir >/dev/null 2>&1 || die "not a git repository"
 
 dirty=$(git status --porcelain --untracked-files=normal)

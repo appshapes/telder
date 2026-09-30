@@ -115,7 +115,8 @@ class ChildEnv(unittest.TestCase):
             self.assertEqual(hook.claude_command({}), "claude")
 
     def test_command_shape(self):
-        cmd = hook.summarize_command({}, hook.options({}))
+        opts = hook.options({})
+        cmd = hook.summarize_command({}, opts, hook.instructions_text(hook.instruction_parts(opts, None)))
         self.assertEqual(cmd[:2], ["claude", "-p"])
         self.assertIn("--no-session-persistence", cmd)
         self.assertIn("--strict-mcp-config", cmd)
@@ -126,6 +127,7 @@ class ChildEnv(unittest.TestCase):
         system = cmd[cmd.index("--system-prompt") + 1]
         self.assertIn("at most 5 points", system)
         self.assertIn("simple and concise language", system)
+        self.assertTrue(system.endswith("single word NONE."))
 
 
 class CleanSummary(unittest.TestCase):
@@ -292,10 +294,151 @@ class CommandLine(unittest.TestCase):
         with mock.patch.object(hook, "warn"):
             self.assertEqual(hook.main(["sideways"], None, io.StringIO(), {}), 2)
             self.assertEqual(hook.main(["off", "--data-dir"], None, io.StringIO(), {}), 2)
+            self.assertEqual(hook.main(["instructions", "--mode"], None, io.StringIO(), {}), 2)
+            self.assertEqual(hook.main(["instructions", "--sideways"], None, io.StringIO(), {}), 2)
 
     def test_data_dir_falls_back_to_a_temporary_directory(self):
         self.assertTrue(hook.data_dir({}).startswith(tempfile.gettempdir()))
         self.assertEqual(hook.data_dir({"CLAUDE_PLUGIN_DATA": "/d"}), "/d")
+
+
+class Instructions(unittest.TestCase):
+    def parts(self, env=None, project=None):
+        with mock.patch.object(hook, "warn") as warn:
+            parts = hook.instruction_parts(hook.options(env or {}), project)
+        return parts, warn
+
+    def test_built_in_then_format_rules(self):
+        parts, warn = self.parts()
+        self.assertEqual([source for source, _ in parts], ["the plugin", "the format rules, fixed"])
+        self.assertEqual(parts[0][1], hook.BUILT_IN)
+        self.assertIn("at most 5 points", parts[1][1])
+        warn.assert_not_called()
+
+    def test_inline_option_is_added_after_the_built_in(self):
+        parts, _ = self.parts({"CLAUDE_PLUGIN_OPTION_INSTRUCTIONS": "  Write it in French.  "})
+        self.assertEqual([source for source, _ in parts][:2], ["the plugin", "your instructions option"])
+        self.assertEqual(parts[1][1], "Write it in French.")
+        text = hook.instructions_text(parts)
+        self.assertLess(text.index(hook.BUILT_IN), text.index("Write it in French."))
+        self.assertTrue(text.endswith("NONE."))
+
+    def test_file_option_and_project_file_in_order(self):
+        with tempfile.TemporaryDirectory() as folder:
+            mine = os.path.join(folder, "mine.md")
+            with open(mine, "w", encoding="utf-8") as f:
+                f.write("\nSay what I must do next.\n")
+            project = os.path.join(folder, "proj")
+            os.makedirs(project)
+            with open(os.path.join(project, hook.PROJECT_FILE), "w", encoding="utf-8") as f:
+                f.write("Name the files that changed.")
+            parts, warn = self.parts({"CLAUDE_PLUGIN_OPTION_INSTRUCTIONS_FILE": mine,
+                                      "CLAUDE_PLUGIN_OPTION_INSTRUCTIONS": "Be brief."}, project)
+            self.assertEqual([source for source, _ in parts],
+                             ["the plugin", "your instructions option", mine, os.path.join(project, hook.PROJECT_FILE),
+                              "the format rules, fixed"])
+            self.assertEqual(parts[2][1], "Say what I must do next.")
+            self.assertEqual(parts[3][1], "Name the files that changed.")
+            warn.assert_not_called()
+
+    def test_replace_drops_the_built_in_only(self):
+        with tempfile.TemporaryDirectory() as folder:
+            parts, warn = self.parts({"CLAUDE_PLUGIN_OPTION_INSTRUCTIONS_MODE": "REPLACE",
+                                      "CLAUDE_PLUGIN_OPTION_INSTRUCTIONS": "Three words each."}, folder)
+            self.assertEqual([source for source, _ in parts], ["your instructions option", "the format rules, fixed"])
+            warn.assert_not_called()
+
+    def test_replace_with_nothing_falls_back_with_a_warning(self):
+        parts, warn = self.parts({"CLAUDE_PLUGIN_OPTION_INSTRUCTIONS_MODE": "replace"})
+        self.assertEqual([source for source, _ in parts], ["the plugin", "the format rules, fixed"])
+        self.assertIn("replace", warn.call_args[0][0])
+
+    def test_bad_mode_keeps_add(self):
+        with mock.patch.object(hook, "warn") as warn:
+            opts = hook.options({"CLAUDE_PLUGIN_OPTION_INSTRUCTIONS_MODE": "sideways"})
+        self.assertEqual(opts["instructions_mode"], "add")
+        warn.assert_called_once()
+
+    def test_missing_file_warns_missing_project_file_is_silent(self):
+        with tempfile.TemporaryDirectory() as folder:
+            parts, warn = self.parts({"CLAUDE_PLUGIN_OPTION_INSTRUCTIONS_FILE": os.path.join(folder, "none.md")}, folder)
+            self.assertEqual([source for source, _ in parts], ["the plugin", "the format rules, fixed"])
+            warn.assert_called_once()
+            self.assertIn("not found", warn.call_args[0][0])
+
+    def test_too_large_blank_and_binary_files_are_ignored(self):
+        with tempfile.TemporaryDirectory() as folder:
+            big = os.path.join(folder, "big.md")
+            with open(big, "w") as f:
+                f.write("x" * (hook.MAX_INSTRUCTIONS_BYTES + 1))
+            blank = os.path.join(folder, "blank.md")
+            with open(blank, "w") as f:
+                f.write("  \n\n")
+            binary = os.path.join(folder, "bin.md")
+            with open(binary, "wb") as f:
+                f.write(b"\xff\xfe\x00 not text")
+            for path, warned in ((big, True), (blank, False), (binary, True)):
+                with mock.patch.object(hook, "warn") as warn:
+                    self.assertIsNone(hook.read_instructions_file(path))
+                self.assertEqual(warn.called, warned, path)
+
+    def test_summarize_sends_the_layered_instructions(self):
+        with tempfile.TemporaryDirectory() as project:
+            with open(os.path.join(project, hook.PROJECT_FILE), "w") as f:
+                f.write("Mention the risk first.")
+            run = fake_run("- a\n")
+            env = {"CLAUDE_PLUGIN_OPTION_INSTRUCTIONS": "In Spanish."}
+            with mock.patch.object(hook, "warn"):
+                hook.summarize(LONG, hook.options(env), env, project_dir=project, run=run)
+            cmd = run.calls[0][0]
+            system = cmd[cmd.index("--system-prompt") + 1]
+            self.assertLess(system.index(hook.BUILT_IN), system.index("In Spanish."))
+            self.assertLess(system.index("In Spanish."), system.index("Mention the risk first."))
+            self.assertTrue(system.endswith("NONE."))
+
+    def test_hook_uses_project_dir_from_env_else_cwd(self):
+        with tempfile.TemporaryDirectory() as folder:
+            a = os.path.join(folder, "a")
+            b = os.path.join(folder, "b")
+            os.makedirs(a)
+            os.makedirs(b)
+            with open(os.path.join(a, hook.PROJECT_FILE), "w") as f:
+                f.write("from a")
+            with open(os.path.join(b, hook.PROJECT_FILE), "w") as f:
+                f.write("from b")
+            data = {"hook_event_name": "Stop", "stop_reason": "end_turn", "last_assistant_message": LONG, "cwd": b}
+            for env, expected in (({"CLAUDE_PROJECT_DIR": a, "CLAUDE_PLUGIN_DATA": folder}, "from a"),
+                                  ({"CLAUDE_PLUGIN_DATA": folder}, "from b")):
+                run = fake_run("- x\n")
+                out = io.StringIO()
+                with mock.patch.object(hook.subprocess, "run", run), mock.patch.object(hook, "warn"):
+                    hook.main([], io.StringIO(json.dumps(data)), out, env)
+                system = run.calls[0][0][run.calls[0][0].index("--system-prompt") + 1]
+                self.assertIn(expected, system)
+
+    def test_instructions_command_reports_every_part(self):
+        with tempfile.TemporaryDirectory() as folder:
+            mine = os.path.join(folder, "mine.md")
+            with open(mine, "w") as f:
+                f.write("Say what to do next.")
+            with open(os.path.join(folder, hook.PROJECT_FILE), "w") as f:
+                f.write("Name the files.")
+            out = io.StringIO()
+            code = hook.main(["instructions", "--instructions-file", mine, "--mode", "add", "--max-points", "3",
+                              "--project-dir", folder, "--instructions-stdin"], io.StringIO("Be brief.\n"), out, {})
+            self.assertEqual(code, 0)
+            report = out.getvalue()
+            self.assertEqual(report.split("\n")[0], "From the plugin:")
+            self.assertIn("From your instructions option:\nBe brief.", report)
+            self.assertIn(f"From {mine}:\nSay what to do next.", report)
+            self.assertIn(f"From {os.path.join(folder, hook.PROJECT_FILE)}:\nName the files.", report)
+            self.assertIn("From the format rules, fixed:\nFormat: an unordered list only", report)
+            self.assertIn("at most 3 points", report)
+
+    def test_instructions_command_defaults(self):
+        out = io.StringIO()
+        self.assertEqual(hook.main(["instructions"], io.StringIO(""), out, {}), 0)
+        self.assertEqual(out.getvalue().count("From "), 2)
 
 
 if __name__ == "__main__":

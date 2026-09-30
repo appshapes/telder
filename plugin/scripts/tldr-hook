@@ -2,18 +2,25 @@
 """tldr-hook: the one script behind the tldr plugin (Telder).
 
 Claude Code runs it as a hook. It reads the hook's JSON input on stdin, and when the reply Claude just gave is
-long enough, it asks a small model, through the user's own `claude` login, for a short summary and hands that
-back to Claude Code as the hook's JSON reply. Two events are understood, and hooks.json picks the one in use:
+long enough, it asks a model, through the person's own `claude` login, for a short summary and hands that back to
+Claude Code as the hook's JSON reply. Two events are understood, and hooks.json picks the one in use:
 
   MessageDisplay  the summary is appended to what the screen shows, on the message's final chunk; display-only,
                   so the transcript and what Claude sees are unchanged
   Stop            the summary is returned as `systemMessage`, a notice under the reply
 
-Standard library only. Nothing is written to stdout but the JSON reply; diagnostics go to stderr. The reply text
-goes to the summarizing model and nowhere else; no file under the project is written; the transcript file is
+The instructions the model follows are layered: the plugin's own, then the person's (the `instructions` option,
+the `instructions_file` option), then the project's (`.telder.md` at the project root), then the fixed format
+rules. `instructions_mode: replace` drops the plugin's own part.
+
+Standard library only. Nothing is written to stdout but the hook's JSON reply; diagnostics go to stderr. The reply
+text goes to the summarizing model and nowhere else; no file under the project is written; the transcript file is
 never read.
 
-Also a small command line for the /tldr skill:  tldr-hook off | on | status  [--data-dir DIR]
+Also a small command line for the /tldr skill:
+  tldr-hook off | on | status [--data-dir DIR]
+  tldr-hook instructions [--instructions-file PATH] [--instructions-stdin] [--mode add|replace]
+                         [--max-points N] [--project-dir DIR]
 """
 import json
 import os
@@ -29,16 +36,23 @@ DEFAULTS = {
     "max_points": 5,
     "heading": "TL;DR",
     "timeout": 40,
+    "instructions": "",
+    "instructions_file": "",
+    "instructions_mode": "add",
 }
 MIN_TIMEOUT, MAX_TIMEOUT = 10, 120
+MAX_INSTRUCTIONS_BYTES = 8192
+PROJECT_FILE = ".telder.md"
 INNER_MARK = "TLDR_INNER"
 NONE_MARK = "NONE"
 
-GUIDANCE = (
+BUILT_IN = (
     "You write the TL;DR of a reply an assistant just gave to a person. The person likely does not have much "
     "time to read. Summarize the salient points using simple and concise language. Limit or omit abbreviations. "
     "Do not use mannered prose. You are empowering someone to make a quick yet informed decision: highest "
-    "priority items first, and keep it simple and short.\n\n"
+    "priority items first, and keep it simple and short."
+)
+FORMAT_RULES = (
     "Format: an unordered list only, one point per line, each line starting with '- ', at most {max_points} "
     "points, each point one short sentence. No heading, no preamble, no closing line, no code. If the reply is "
     "already a list of {max_points} or fewer short points, or is only a question to the person, answer with the "
@@ -61,6 +75,16 @@ def options(env):
     heading = env.get("CLAUDE_PLUGIN_OPTION_HEADING")
     if heading is not None and heading.strip():
         opts["heading"] = heading.strip()
+    for key in ("instructions", "instructions_file"):
+        value = env.get("CLAUDE_PLUGIN_OPTION_" + key.upper())
+        if value is not None:
+            opts[key] = value.strip()
+    mode = (env.get("CLAUDE_PLUGIN_OPTION_INSTRUCTIONS_MODE") or "").strip().lower()
+    if mode:
+        if mode in ("add", "replace"):
+            opts["instructions_mode"] = mode
+        else:
+            warn(f"option instructions_mode={mode!r} is neither add nor replace; using add")
     for key, low, high in (("min_words", 0, 100000), ("max_points", 1, 10), ("timeout", MIN_TIMEOUT, MAX_TIMEOUT)):
         raw = env.get("CLAUDE_PLUGIN_OPTION_" + key.upper())
         if raw is None or not str(raw).strip():
@@ -76,6 +100,70 @@ def options(env):
 
 def warn(message):
     print(f"tldr: {message}", file=sys.stderr)
+
+
+# ---- instructions ------------------------------------------------------------------------------------------------
+
+def read_instructions_file(path, missing_is_silent=False):
+    """The text of an instructions file, or None: missing (a warning unless silent), unreadable, not UTF-8, over
+    MAX_INSTRUCTIONS_BYTES, or blank."""
+    try:
+        size = os.path.getsize(path)
+    except OSError:
+        if not missing_is_silent:
+            warn(f"instructions file not found: {path}")
+        return None
+    if size > MAX_INSTRUCTIONS_BYTES:
+        warn(f"instructions file ignored, larger than {MAX_INSTRUCTIONS_BYTES} bytes: {path}")
+        return None
+    try:
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+    except (OSError, UnicodeDecodeError) as error:
+        warn(f"instructions file ignored, {error.__class__.__name__}: {path}")
+        return None
+    text = text.strip()
+    return text or None
+
+
+def instruction_parts(opts, project_dir):
+    """The layers of the instructions, in order, as (source, text) pairs. The format rules are always last."""
+    parts = []
+    if opts["instructions_mode"] != "replace":
+        parts.append(("the plugin", BUILT_IN))
+    if opts["instructions"]:
+        parts.append(("your instructions option", opts["instructions"]))
+    if opts["instructions_file"]:
+        text = read_instructions_file(opts["instructions_file"])
+        if text:
+            parts.append((opts["instructions_file"], text))
+    if project_dir:
+        path = os.path.join(project_dir, PROJECT_FILE)
+        text = read_instructions_file(path, missing_is_silent=True)
+        if text:
+            parts.append((path, text))
+    if not parts:
+        warn("instructions_mode is replace but no instructions were given; using the plugin's own")
+        parts.append(("the plugin", BUILT_IN))
+    parts.append(("the format rules, fixed", FORMAT_RULES.format(max_points=opts["max_points"], none=NONE_MARK)))
+    return parts
+
+
+def instructions_text(parts):
+    return "\n\n".join(text for _, text in parts)
+
+
+def instructions_report(parts):
+    return "".join(f"From {source}:\n{text}\n\n" for source, text in parts).rstrip() + "\n"
+
+
+def project_dir_of(env, data):
+    """The project root: CLAUDE_PROJECT_DIR, which Claude Code exports to its hooks, else the hook input's cwd."""
+    given = (env.get("CLAUDE_PROJECT_DIR") or "").strip()
+    if given:
+        return given
+    cwd = (data.get("cwd") or "").strip() if isinstance(data, dict) else ""
+    return cwd or None
 
 
 # ---- text ------------------------------------------------------------------------------------------------------
@@ -136,8 +224,7 @@ def claude_command(env):
     return "claude"
 
 
-def summarize_command(env, opts):
-    system = GUIDANCE.format(max_points=opts["max_points"], none=NONE_MARK)
+def summarize_command(env, opts, system):
     return [
         claude_command(env), "-p",
         "--model", opts["model"],
@@ -152,10 +239,11 @@ def summarize_command(env, opts):
     ]
 
 
-def summarize(text, opts, env, run=None):
+def summarize(text, opts, env, project_dir=None, run=None):
     """The summary of `text` as a list, or None when the model had nothing to say or could not be reached."""
     run = subprocess.run if run is None else run
-    cmd = summarize_command(env, opts)
+    system = instructions_text(instruction_parts(opts, project_dir))
+    cmd = summarize_command(env, opts, system)
     started = time.monotonic()
     try:
         result = run(cmd, input=text, capture_output=True, text=True, env=child_env(env), timeout=opts["timeout"])
@@ -228,7 +316,7 @@ def handle_stop(data, opts, env):
     text = data.get("last_assistant_message") or ""
     if prose_words(text) < opts["min_words"]:
         return None
-    summary = summarize(text, opts, env)
+    summary = summarize(text, opts, env, project_dir_of(env, data))
     if summary is None:
         return None
     return {"systemMessage": format_summary(opts["heading"], summary)}
@@ -252,7 +340,7 @@ def handle_message_display(data, opts, env):
     sweep_stale(env)
     if prose_words(text) < opts["min_words"]:
         return None
-    summary = summarize(text, opts, env)
+    summary = summarize(text, opts, env, project_dir_of(env, data))
     if summary is None:
         return None
     shown = delta + ("\n\n" if delta else "") + "---\n**" + opts["heading"] + "**\n" + summary
@@ -286,17 +374,38 @@ def run_hook(stdin, stdout, env):
 
 # ---- the command line for the /tldr skill --------------------------------------------------------------------------
 
-def run_command(argv, stdout, env):
+USAGE = ("usage: tldr-hook off | on | status [--data-dir DIR]\n"
+         "       tldr-hook instructions [--instructions-file PATH] [--instructions-stdin] [--mode add|replace]"
+         " [--max-points N] [--project-dir DIR]\n"
+         "       (no argument: run as a hook on stdin)")
+
+
+def take_value(args, flag):
+    """Remove `flag VALUE` from args and return VALUE, or None when the flag is absent; a flag with no value is a usage error."""
+    if flag not in args:
+        return None
+    at = args.index(flag)
+    if at + 1 >= len(args):
+        raise ValueError(f"{flag} needs a value")
+    value = args[at + 1]
+    del args[at:at + 2]
+    return value
+
+
+def run_command(argv, stdin, stdout, env):
     args = list(argv)
-    if "--data-dir" in args:
-        at = args.index("--data-dir")
-        if at + 1 >= len(args):
-            warn("--data-dir needs a directory")
-            return 2
-        env = dict(env, CLAUDE_PLUGIN_DATA=args[at + 1])
-        del args[at:at + 2]
+    try:
+        data_dir_arg = take_value(args, "--data-dir")
+        if args and args[0] == "instructions":
+            return run_instructions(args[1:], stdin, stdout, env)
+    except ValueError as error:
+        warn(str(error))
+        warn(USAGE)
+        return 2
+    if data_dir_arg:
+        env = dict(env, CLAUDE_PLUGIN_DATA=data_dir_arg)
     if len(args) != 1 or args[0] not in ("off", "on", "status"):
-        warn("usage: tldr-hook off | on | status [--data-dir DIR]   (no argument: run as a hook on stdin)")
+        warn(USAGE)
         return 2
     path = mute_path(env)
     if args[0] == "off":
@@ -315,13 +424,40 @@ def run_command(argv, stdout, env):
     return 0
 
 
+def run_instructions(args, stdin, stdout, env):
+    """Print the instructions in effect, each part with where it came from. The option values come as arguments,
+    because the model's Bash commands do not carry the CLAUDE_PLUGIN_OPTION_* variables the hook gets."""
+    args = list(args)
+    file_arg = take_value(args, "--instructions-file")
+    mode_arg = take_value(args, "--mode")
+    points_arg = take_value(args, "--max-points")
+    project_arg = take_value(args, "--project-dir")
+    inline = ""
+    if "--instructions-stdin" in args:
+        args.remove("--instructions-stdin")
+        inline = stdin.read() if stdin is not None else ""
+    if args:
+        raise ValueError(f"unknown argument: {args[0]}")
+    given = {}
+    if file_arg is not None:
+        given["CLAUDE_PLUGIN_OPTION_INSTRUCTIONS_FILE"] = file_arg
+    if mode_arg is not None:
+        given["CLAUDE_PLUGIN_OPTION_INSTRUCTIONS_MODE"] = mode_arg
+    if points_arg is not None:
+        given["CLAUDE_PLUGIN_OPTION_MAX_POINTS"] = points_arg
+    given["CLAUDE_PLUGIN_OPTION_INSTRUCTIONS"] = inline
+    opts = options(given)
+    stdout.write(instructions_report(instruction_parts(opts, (project_arg or "").strip() or None)))
+    return 0
+
+
 def main(argv=None, stdin=None, stdout=None, env=None):
     argv = sys.argv[1:] if argv is None else argv
     stdin = sys.stdin if stdin is None else stdin
     stdout = sys.stdout if stdout is None else stdout
     env = os.environ if env is None else env
     if argv:
-        return run_command(argv, stdout, env)
+        return run_command(argv, stdin, stdout, env)
     return run_hook(stdin, stdout, env)
 
 

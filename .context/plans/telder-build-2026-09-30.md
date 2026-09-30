@@ -73,6 +73,17 @@ event unmeasured.
   `auto-merge.yml`, the monthly agents, `_create-claude-issue.yml`) and the release-notes email. Both need
   repository secrets (`CLAUDE_CODE_OAUTH_TOKEN`, `GH_ACTIONS_TOKEN`, `RESEND_API_KEY`) and Blacksmith runners.
 
+## Adjustable instructions (built in the same session, second commit)
+
+Rjae asked for it after the initial build. Design: the system prompt is layered — the plugin's own voice
+guidance, the `instructions` option (inline), the `instructions_file` option (type `file`, read at every
+summary, 8 KB cap), the project's `.telder.md` (from `CLAUDE_PROJECT_DIR`, else the hook input's `cwd`; always
+added; a repository file, so it can only change the summary's wording), then the fixed format rules. `replace`
+mode drops the first layer only. `/tldr` follows the same layers through `tldr-hook instructions`, which takes
+the option values as arguments because a model's Bash command has no `CLAUDE_PLUGIN_OPTION_*`; the inline text
+travels through a quoted heredoc. `/tldr instructions` shows the layers with their sources. Not built: a
+project-level switch to refuse `.telder.md` (display-only blast radius did not justify a ninth option).
+
 ## State at the end of the first session
 
 Everything is written and uncommitted in `/Users/rjae/Development/appshapes/telder` (git initialised, files
