@@ -1,0 +1,9 @@
+{
+  "session_id": "fixture",
+  "cwd": "/tmp",
+  "permission_mode": "default",
+  "hook_event_name": "Stop",
+  "stop_reason": "end_turn",
+  "stop_hook_active": true,
+  "last_assistant_message": "Sunlight looks white, but it is a mix of every visible color, each with its own wavelength. When sunlight enters the atmosphere, it runs into nitrogen and oxygen molecules that are far smaller than those wavelengths. These tiny particles scatter light through a process called Rayleigh scattering, and its strength depends heavily on wavelength: shorter wavelengths scatter far more than longer ones. Blue light scatters about five times more than red, so it gets bounced around the whole sky and reaches your eyes from every direction.\n\nViolet light scatters even more than blue, so you might expect a violet sky. But sunlight contains less violet to begin with, some of it is absorbed high in the atmosphere, and our eyes are more sensitive to blue. Together, these effects make the sky look blue to us.\n\nAt sunrise and sunset, the sun sits low on the horizon, so its light passes through much more atmosphere to reach you. Along that long path, most of the blue and green light gets scattered away. Mostly the longer oranges and reds remain, which paints the sun and nearby clouds in warm colors. Dust, smoke, and other particles in the air can make these colors even stronger."
+}

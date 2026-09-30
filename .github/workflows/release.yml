@@ -1,0 +1,46 @@
+# Fires on a pushed `v*` tag and on nothing else. The tag is pushed by `make release version=X.Y.Z card=<n>`
+# (scripts/release-prep.sh), and a published tag is never moved. Ported from appshapes/brigade's release.yml and
+# cut down: there are no binaries, so the release is the tag plus its changelog section as notes.
+#
+# GitHub delivers a push event at least once, not exactly once (Brigade saw one tag push start two runs a second
+# apart), so the `concurrency` group queues a duplicate behind the first run and the first step then finds the
+# release published and every later step is skipped.
+name: release
+on:
+  push:
+    tags: ["v*"]
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+permissions:
+  contents: write                                   # create the release
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Is this tag already published?
+        id: published
+        run: |
+          if gh release view "${GITHUB_REF_NAME}" --json isDraft --jq '.isDraft' 2>/dev/null | grep -qx false; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "${GITHUB_REF_NAME} is already published: this run is a duplicate delivery of the tag push and does nothing else"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+        env: {GH_TOKEN: "${{ github.token }}"}
+      - name: Guard that the plugin manifest pins this tag and the changelog has its section
+        if: steps.published.outputs.exists != 'true'
+        run: |
+          test "v$(sed -nE 's/^[[:space:]]*"version":[[:space:]]*"([^"]+)".*/\1/p' plugin/.claude-plugin/plugin.json | head -n 1)" = "${GITHUB_REF_NAME}"
+          scripts/ci/release-notes.sh "${GITHUB_REF_NAME}" > "${RUNNER_TEMP}/notes.md"
+          cat "${RUNNER_TEMP}/notes.md"
+      - name: Publish
+        if: steps.published.outputs.exists != 'true'
+        run: |
+          case "${GITHUB_REF_NAME}" in
+            *-*) gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --notes-file "${RUNNER_TEMP}/notes.md" --prerelease ;;
+            *)   gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --notes-file "${RUNNER_TEMP}/notes.md" --latest ;;
+          esac
+        env: {GH_TOKEN: "${{ github.token }}"}

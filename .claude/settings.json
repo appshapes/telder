@@ -1,0 +1,8 @@
+{
+  "extraKnownMarketplaces": {
+    "telder": {
+      "source": { "source": "github", "repo": "appshapes/telder" },
+      "autoUpdate": true
+    }
+  }
+}

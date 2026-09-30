@@ -1,0 +1,54 @@
+{
+  "name": "tldr",
+  "version": "0.0.0",
+  "description": "A TL;DR under every long reply: the most important points first, as a plain list, in simple language, for a reader with no time.",
+  "author": {
+    "name": "appshapes"
+  },
+  "homepage": "https://github.com/appshapes/telder",
+  "repository": "https://github.com/appshapes/telder",
+  "license": "MIT",
+  "keywords": [
+    "summary",
+    "tldr",
+    "readability"
+  ],
+  "userConfig": {
+    "min_words": {
+      "type": "number",
+      "title": "Shortest reply that gets a TL;DR",
+      "description": "A reply with fewer words of prose than this gets no summary. Code blocks and table rows do not count. 0 summarizes every reply.",
+      "default": 120,
+      "min": 0,
+      "max": 100000
+    },
+    "max_points": {
+      "type": "number",
+      "title": "Most points in a TL;DR",
+      "description": "The summary is a list of at most this many points, the most important first.",
+      "default": 5,
+      "min": 1,
+      "max": 10
+    },
+    "model": {
+      "type": "string",
+      "title": "Model that writes the TL;DR",
+      "description": "A full model name. claude-opus-5-5 (the default) answered in about four seconds when measured, claude-sonnet-5-5 in about three, claude-fable-5-1 in four to six; claude-haiku-4-5-20251001 is the cheapest but took seven to forty seconds. It runs through your own claude login, as a nested `claude -p`, and sees only the reply being summarized. Short aliases such as opus or haiku are not accepted by that call.",
+      "default": "claude-opus-5-5"
+    },
+    "heading": {
+      "type": "string",
+      "title": "Heading over the summary",
+      "description": "The line shown above the points.",
+      "default": "TL;DR"
+    },
+    "timeout": {
+      "type": "number",
+      "title": "Seconds to wait for the summary",
+      "description": "The nested model call is given this long; past it the reply is shown without a summary. 10 to 120.",
+      "default": 40,
+      "min": 10,
+      "max": 120
+    }
+  }
+}

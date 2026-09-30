@@ -1,0 +1,329 @@
+#!/usr/bin/env python3
+"""tldr-hook: the one script behind the tldr plugin (Telder).
+
+Claude Code runs it as a hook. It reads the hook's JSON input on stdin, and when the reply Claude just gave is
+long enough, it asks a small model, through the user's own `claude` login, for a short summary and hands that
+back to Claude Code as the hook's JSON reply. Two events are understood, and hooks.json picks the one in use:
+
+  MessageDisplay  the summary is appended to what the screen shows, on the message's final chunk; display-only,
+                  so the transcript and what Claude sees are unchanged
+  Stop            the summary is returned as `systemMessage`, a notice under the reply
+
+Standard library only. Nothing is written to stdout but the JSON reply; diagnostics go to stderr. The reply text
+goes to the summarizing model and nowhere else; no file under the project is written; the transcript file is
+never read.
+
+Also a small command line for the /tldr skill:  tldr-hook off | on | status  [--data-dir DIR]
+"""
+import json
+import os
+import re
+import subprocess
+import sys
+import tempfile
+import time
+
+DEFAULTS = {
+    "model": "claude-opus-5-5",
+    "min_words": 120,
+    "max_points": 5,
+    "heading": "TL;DR",
+    "timeout": 40,
+}
+MIN_TIMEOUT, MAX_TIMEOUT = 10, 120
+INNER_MARK = "TLDR_INNER"
+NONE_MARK = "NONE"
+
+GUIDANCE = (
+    "You write the TL;DR of a reply an assistant just gave to a person. The person likely does not have much "
+    "time to read. Summarize the salient points using simple and concise language. Limit or omit abbreviations. "
+    "Do not use mannered prose. You are empowering someone to make a quick yet informed decision: highest "
+    "priority items first, and keep it simple and short.\n\n"
+    "Format: an unordered list only, one point per line, each line starting with '- ', at most {max_points} "
+    "points, each point one short sentence. No heading, no preamble, no closing line, no code. If the reply is "
+    "already a list of {max_points} or fewer short points, or is only a question to the person, answer with the "
+    "single word {none}."
+)
+
+FENCE = re.compile(r"^(```|~~~).*?^\1[ \t]*$", re.M | re.S)
+TABLE_ROW = re.compile(r"^\s*\|.*\|\s*$", re.M)
+HEADING_LINE = re.compile(r"^\s*(\*\*)?\s*(tl;?dr|summary)\s*:?\s*(\*\*)?\s*:?\s*$", re.I)
+
+
+# ---- options ---------------------------------------------------------------------------------------------------
+
+def options(env):
+    """The plugin's options, from the CLAUDE_PLUGIN_OPTION_* variables Claude Code exports, with defaults."""
+    opts = dict(DEFAULTS)
+    model = (env.get("CLAUDE_PLUGIN_OPTION_MODEL") or "").strip()
+    if model:
+        opts["model"] = model
+    heading = env.get("CLAUDE_PLUGIN_OPTION_HEADING")
+    if heading is not None and heading.strip():
+        opts["heading"] = heading.strip()
+    for key, low, high in (("min_words", 0, 100000), ("max_points", 1, 10), ("timeout", MIN_TIMEOUT, MAX_TIMEOUT)):
+        raw = env.get("CLAUDE_PLUGIN_OPTION_" + key.upper())
+        if raw is None or not str(raw).strip():
+            continue
+        try:
+            value = int(float(str(raw).strip()))
+        except ValueError:
+            warn(f"option {key}={raw!r} is not a number; using {opts[key]}")
+            continue
+        opts[key] = min(max(value, low), high)
+    return opts
+
+
+def warn(message):
+    print(f"tldr: {message}", file=sys.stderr)
+
+
+# ---- text ------------------------------------------------------------------------------------------------------
+
+def prose_words(text):
+    """Words of prose in a reply: fenced code blocks and table rows do not count."""
+    if not text:
+        return 0
+    stripped = FENCE.sub("", text)
+    stripped = TABLE_ROW.sub("", stripped)
+    return len(stripped.split())
+
+
+def clean_summary(text, max_points):
+    """The model's answer as a list of at most max_points lines, or None when there is nothing to show."""
+    if not text:
+        return None
+    lines = []
+    for line in text.strip().splitlines():
+        line = line.rstrip()
+        if not line.strip():
+            continue
+        if HEADING_LINE.match(line):
+            continue
+        lines.append(line)
+    if not lines:
+        return None
+    if len(lines) == 1 and lines[0].strip().strip("*`.").upper() == NONE_MARK:
+        return None
+    points = []
+    for line in lines:
+        body = line.strip()
+        body = re.sub(r"^([-*•]|\d+[.)])\s+", "", body)
+        if body:
+            points.append("- " + body)
+    if not points:
+        return None
+    return "\n".join(points[:max_points])
+
+
+# ---- the nested claude call -------------------------------------------------------------------------------------
+
+def child_env(env):
+    """The environment for the nested `claude -p`: every CLAUDE*-prefixed variable (no underscore, so CLAUDECODE is
+    covered) and AI_AGENT* removed, CLAUDE_CONFIG_DIR kept so a second persona keeps its own login, and the
+    marker that tells the nested session's own copy of this hook to return at once."""
+    out = {k: v for k, v in env.items()
+           if not ((k.startswith("CLAUDE") and k != "CLAUDE_CONFIG_DIR") or k.startswith("AI_AGENT"))}
+    out[INNER_MARK] = "1"
+    return out
+
+
+def claude_command(env):
+    """The `claude` to run: the executable that runs this session when Claude Code names it, else `claude` on PATH."""
+    exe = (env.get("CLAUDE_CODE_EXECPATH") or "").strip()
+    if exe and os.path.isfile(exe) and os.access(exe, os.X_OK):
+        return exe
+    return "claude"
+
+
+def summarize_command(env, opts):
+    system = GUIDANCE.format(max_points=opts["max_points"], none=NONE_MARK)
+    return [
+        claude_command(env), "-p",
+        "--model", opts["model"],
+        "--output-format", "text",
+        "--system-prompt", system,
+        "--no-session-persistence",
+        "--setting-sources", "",
+        "--strict-mcp-config",
+        "--tools", "",
+        "--disable-slash-commands",
+        "Write the TL;DR of the following reply.",
+    ]
+
+
+def summarize(text, opts, env, run=None):
+    """The summary of `text` as a list, or None when the model had nothing to say or could not be reached."""
+    run = subprocess.run if run is None else run
+    cmd = summarize_command(env, opts)
+    started = time.monotonic()
+    try:
+        result = run(cmd, input=text, capture_output=True, text=True, env=child_env(env), timeout=opts["timeout"])
+    except subprocess.TimeoutExpired:
+        warn(f"the summarizing model did not answer within {opts['timeout']}s")
+        return None
+    except OSError as error:
+        warn(f"cannot run claude: {error}")
+        return None
+    if result.returncode != 0:
+        detail = (result.stderr or "").strip().splitlines()
+        warn(f"claude -p exited {result.returncode}" + (f": {detail[-1][:200]}" if detail else ""))
+        return None
+    summary = clean_summary(result.stdout, opts["max_points"])
+    warn(f"{prose_words(text)} words in, {'no summary' if summary is None else str(len(summary.split())) + ' words out'}, "
+         f"{time.monotonic() - started:.1f}s, {opts['model']}")
+    return summary
+
+
+# ---- state: the mute, and the chunk accumulator -------------------------------------------------------------------
+
+def data_dir(env):
+    """Where state lives: CLAUDE_PLUGIN_DATA (kept across updates), else a per-user temporary directory."""
+    given = (env.get("CLAUDE_PLUGIN_DATA") or "").strip()
+    if given:
+        return given
+    uid = os.getuid() if hasattr(os, "getuid") else "user"
+    return os.path.join(tempfile.gettempdir(), f"tldr-{uid}")
+
+
+def mute_path(env):
+    return os.path.join(data_dir(env), "mute")
+
+
+def muted(env):
+    return os.path.exists(mute_path(env))
+
+
+def accumulator_path(env, data):
+    key = re.sub(r"[^A-Za-z0-9_-]", "_", f"{data.get('session_id', 's')}-{data.get('message_id', 'm')}")
+    return os.path.join(data_dir(env), "chunks", key)
+
+
+def sweep_stale(env, max_age=3600):
+    """Chunk files older than max_age seconds are from messages that never reached their final chunk."""
+    folder = os.path.join(data_dir(env), "chunks")
+    try:
+        names = os.listdir(folder)
+    except OSError:
+        return
+    now = time.time()
+    for name in names:
+        path = os.path.join(folder, name)
+        try:
+            if now - os.path.getmtime(path) > max_age:
+                os.remove(path)
+        except OSError:
+            pass
+
+
+# ---- the two events ----------------------------------------------------------------------------------------------
+
+def format_summary(heading, summary):
+    return f"{heading}\n{summary}"
+
+
+def handle_stop(data, opts, env):
+    if data.get("stop_reason") not in (None, "end_turn"):
+        return None
+    text = data.get("last_assistant_message") or ""
+    if prose_words(text) < opts["min_words"]:
+        return None
+    summary = summarize(text, opts, env)
+    if summary is None:
+        return None
+    return {"systemMessage": format_summary(opts["heading"], summary)}
+
+
+def handle_message_display(data, opts, env):
+    delta = data.get("delta") or ""
+    path = accumulator_path(env, data)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    if delta:
+        with open(path, "a", encoding="utf-8") as chunk_file:
+            chunk_file.write(delta)
+    if not data.get("final"):
+        return None
+    try:
+        with open(path, encoding="utf-8") as chunk_file:
+            text = chunk_file.read()
+        os.remove(path)
+    except OSError:
+        text = delta
+    sweep_stale(env)
+    if prose_words(text) < opts["min_words"]:
+        return None
+    summary = summarize(text, opts, env)
+    if summary is None:
+        return None
+    shown = delta + ("\n\n" if delta else "") + "---\n**" + opts["heading"] + "**\n" + summary
+    return {"hookSpecificOutput": {"hookEventName": "MessageDisplay", "displayContent": shown}}
+
+
+HANDLERS = {"Stop": handle_stop, "MessageDisplay": handle_message_display}
+
+
+def run_hook(stdin, stdout, env):
+    if env.get(INNER_MARK):
+        return 0
+    try:
+        data = json.load(stdin)
+    except ValueError as error:
+        warn(f"hook input is not JSON: {error}")
+        return 0
+    if not isinstance(data, dict):
+        return 0
+    if muted(env):
+        return 0
+    handler = HANDLERS.get(data.get("hook_event_name"))
+    if handler is None:
+        return 0
+    reply = handler(data, options(env), env)
+    if reply is not None:
+        stdout.write(json.dumps(reply) + "\n")
+        stdout.flush()
+    return 0
+
+
+# ---- the command line for the /tldr skill --------------------------------------------------------------------------
+
+def run_command(argv, stdout, env):
+    args = list(argv)
+    if "--data-dir" in args:
+        at = args.index("--data-dir")
+        if at + 1 >= len(args):
+            warn("--data-dir needs a directory")
+            return 2
+        env = dict(env, CLAUDE_PLUGIN_DATA=args[at + 1])
+        del args[at:at + 2]
+    if len(args) != 1 or args[0] not in ("off", "on", "status"):
+        warn("usage: tldr-hook off | on | status [--data-dir DIR]   (no argument: run as a hook on stdin)")
+        return 2
+    path = mute_path(env)
+    if args[0] == "off":
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as mute_file:
+            mute_file.write(time.strftime("%Y-%m-%dT%H:%M:%S\n"))
+        stdout.write("tldr: off. No summary is written until `tldr-hook on`.\n")
+    elif args[0] == "on":
+        try:
+            os.remove(path)
+        except FileNotFoundError:
+            pass
+        stdout.write("tldr: on.\n")
+    else:
+        stdout.write("tldr: off\n" if os.path.exists(path) else "tldr: on\n")
+    return 0
+
+
+def main(argv=None, stdin=None, stdout=None, env=None):
+    argv = sys.argv[1:] if argv is None else argv
+    stdin = sys.stdin if stdin is None else stdin
+    stdout = sys.stdout if stdout is None else stdout
+    env = os.environ if env is None else env
+    if argv:
+        return run_command(argv, stdout, env)
+    return run_hook(stdin, stdout, env)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

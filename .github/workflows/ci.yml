@@ -1,0 +1,64 @@
+# Ported from appshapes/brigade's ci.yml and cut to what a hooks-only plugin needs. Every job sets
+# `timeout-minutes`, because GitHub's default is 360: a hung job burns six hours before anyone notices. The bounds
+# below are first guesses (no run has been measured yet); re-measure with ten green runs and set each to twice its
+# p90. No constant-false `if:` gate anywhere: every step runs on every push, and a green conclusion means every
+# step passed.
+name: ci
+on:
+  push: {branches: [master]}
+  pull_request: {}
+permissions: {contents: read}
+concurrency: {group: "ci-${{ github.ref }}", cancel-in-progress: true}
+
+jobs:
+  fast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      # What the IMAGE provides, printed: plugin-check.sh check 7 DIES without shellcheck when CI is set, and the
+      # version matters because shellcheck releases disagree with each other (Brigade measured 0.9.0 and 0.11
+      # reporting different codes for the same file). This step never gates; each tool's real gate is where it is
+      # used.
+      - name: Runner image inventory
+        run: |
+          {
+            echo '### Runner image'
+            echo '```'
+            (. /etc/os-release && echo "$PRETTY_NAME $(uname -m)") || echo 'os-release: ABSENT'
+            for t in shellcheck python3 node gh; do
+              if ! command -v "$t" >/dev/null 2>&1; then echo "$t: ABSENT"; continue; fi
+              case "$t" in
+                shellcheck) shellcheck --version | sed -n 's/^version: /shellcheck /p' ;;
+                python3)    python3 --version ;;
+                node)       echo "node $(node --version)" ;;
+                gh)         gh --version | head -1 ;;
+              esac || echo "$t: version check FAILED"
+            done
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+      - run: make test
+      - run: make lint
+      - run: make plugin-check
+      # `claude plugin validate` is login-free (Brigade's E0-8 (g) measured it), so the CLI is installed for this
+      # one step and never authenticated.
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - run: npm install -g @anthropic-ai/claude-code
+      - run: make plugin-validate
+
+  macos:                                  # the primary user platform: its python3 is the one the hook runs under
+    runs-on: macos-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v7
+      - name: Runner image inventory
+        run: |
+          {
+            echo '### Runner image'
+            echo '```'
+            (sw_vers && uname -m) || echo 'sw_vers: FAILED'
+            python3 --version || echo 'python3: ABSENT'
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+      - run: make test

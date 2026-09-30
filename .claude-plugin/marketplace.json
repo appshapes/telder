@@ -1,0 +1,22 @@
+{
+  "name": "telder",
+  "description": "Telder: a TL;DR under every long Claude Code reply, written by a small model through your own login.",
+  "owner": {
+    "name": "appshapes",
+    "url": "https://github.com/appshapes"
+  },
+  "plugins": [
+    {
+      "name": "tldr",
+      "source": "./plugin",
+      "description": "Appends a short, plain-language summary under every long reply: the most important points first, as a list, for a reader with no time.",
+      "repository": "https://github.com/appshapes/telder",
+      "category": "productivity",
+      "keywords": [
+        "summary",
+        "tldr",
+        "readability"
+      ]
+    }
+  ]
+}

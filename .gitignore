@@ -1,0 +1,27 @@
+# scratch files (CLAUDE.md: ephemeral scratch goes here)
+.ignored/
+
+# Claude: local-only overrides (brigade's convention; absent in fresh clones)
+CLAUDE.user.md
+
+# Claude Code local state that the canonical `git add --verbose :/ .` chain would otherwise sweep in
+.claude/.claude-md-seen-mtimes
+.claude/worktrees/
+.serena/
+
+# Python: the hook is one stdlib script; compiled bytecode never ships
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# macOS: one Finder visit to any directory would otherwise commit a binary dropping
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Local environment files
+.env
+.env.*
+!.env.example
