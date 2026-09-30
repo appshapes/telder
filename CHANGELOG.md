@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-09-30
+
 ### Changed
 
 - **A longer wait for the summary.** The default `timeout` is now `90` seconds (was `40`). Opus 5.5 took 27 seconds
