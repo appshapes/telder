@@ -66,7 +66,7 @@ class Options(unittest.TestCase):
         self.assertEqual(opts["min_words"], 300)
         self.assertEqual(opts["max_points"], 10)
         self.assertEqual(opts["heading"], "TL;DR")
-        self.assertEqual(opts["timeout"], 40)
+        self.assertEqual(opts["timeout"], 90)
 
     def test_from_environment(self):
         env = {"CLAUDE_PLUGIN_OPTION_MODEL": " claude-sonnet-5-5 ", "CLAUDE_PLUGIN_OPTION_MIN_WORDS": "40",
@@ -156,7 +156,7 @@ class Summarize(unittest.TestCase):
         self.assertEqual(out, "- a\n- b")
         cmd, kwargs = run.calls[0]
         self.assertEqual(kwargs["input"], LONG)
-        self.assertEqual(kwargs["timeout"], 40)
+        self.assertEqual(kwargs["timeout"], 90)
         self.assertNotIn("CLAUDECODE", kwargs["env"])
         self.assertEqual(kwargs["env"][hook.INNER_MARK], "1")
 

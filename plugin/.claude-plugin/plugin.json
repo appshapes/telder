@@ -46,7 +46,7 @@
       "type": "number",
       "title": "Seconds to wait for the summary",
       "description": "The nested model call is given this long; past it the reply is shown without a summary. 10 to 120.",
-      "default": 40,
+      "default": 90,
       "min": 10,
       "max": 120
     },

@@ -73,7 +73,7 @@ and set them there.
 | `max_points` | `10` | at most this many points, the most important first |
 | `model` | `claude-opus-5-5` | the model that writes the summary, by its full name: `claude-sonnet-5-5` is a little faster and cheaper, `claude-fable-5-1` a little slower, `claude-haiku-4-5-20251001` the cheapest but slow and uneven when measured |
 | `heading` | `TL;DR` | the line above the points |
-| `timeout` | `40` | seconds to wait for the summary before showing the reply without one |
+| `timeout` | `90` | seconds to wait for the summary before showing the reply without one |
 | `instructions` | *(empty)* | a sentence or a few of your own, added to the plugin's instructions |
 | `instructions_file` | *(empty)* | absolute path to a text file of your own instructions, at most 8 KB, added after `instructions` |
 | `instructions_mode` | `add` | `add` keeps the plugin's own instructions before yours; `replace` drops them |

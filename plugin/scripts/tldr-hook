@@ -35,7 +35,7 @@ DEFAULTS = {
     "min_words": 300,
     "max_points": 10,
     "heading": "TL;DR",
-    "timeout": 40,
+    "timeout": 90,
     "instructions": "",
     "instructions_file": "",
     "instructions_mode": "add",
