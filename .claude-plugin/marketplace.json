@@ -1,6 +1,6 @@
 {
   "name": "telder",
-  "description": "Telder: a TL;DR under every long Claude Code reply, written by a small model through your own login.",
+  "description": "Telder: a TL;DR under every long Claude Code reply, written by a model call through your own login.",
   "owner": {
     "name": "appshapes",
     "url": "https://github.com/appshapes"

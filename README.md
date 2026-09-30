@@ -3,8 +3,8 @@
 [![release](https://img.shields.io/github/v/release/appshapes/telder)](https://github.com/appshapes/telder/releases/latest)
 
 A TL;DR under every long Claude Code reply. When a reply runs past a few paragraphs, the `tldr` plugin adds a
-short list under it: the most important points first, in simple language, for a reader with no time. A small
-model writes it through your own `claude` login. Nothing to configure, no API key.
+short list under it: the most important points first, in simple language, for a reader with no time. A model
+writes it through your own `claude` login, Opus by default. Nothing to configure, no API key.
 
 ## If you want to
 

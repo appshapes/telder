@@ -8,7 +8,7 @@ The front [README](../README.md) has the install steps and the options; this pag
 
 - **One hook**, on `MessageDisplay` (`hooks/hooks.json`, exec form, no shell). Claude Code runs it for every piece
   of reply text it shows, and once more when a message is complete. The script keeps the pieces, and on that
-  last call, when the message has enough prose, asks a small model for the summary and hands back the text to
+  last call, when the message has enough prose, asks a model for the summary and hands back the text to
   show. The hook is display-only by Claude Code's own contract: the transcript and what Claude sees keep the
   original text, so the summary can never be read by Claude as an instruction and never grows the context.
 - **One script**, `scripts/tldr-hook`: Python 3, standard library only. It reads the hook's JSON on stdin, counts

@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - **A TL;DR under every long reply.** When Claude Code finishes a reply longer than a few paragraphs, the `tldr`
   plugin appends a short summary: the most important points first, as a plain list, in simple language, for a
-  reader with no time. A small model writes it through your own `claude` login; nothing to configure, no API key.
+  reader with no time. A model writes it through your own `claude` login, Opus by default; nothing to configure, no API key.
 - **Your own instructions for the summary.** The `instructions` option takes a sentence or a few, the
   `instructions_file` option a text file, and a `.telder.md` at the project root carries a team's; each is
   added to the plugin's own instructions, or `instructions_mode: replace` drops those. `/tldr instructions` shows
