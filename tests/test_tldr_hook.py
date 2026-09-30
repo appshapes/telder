@@ -27,7 +27,7 @@ def load_script():
 
 hook = load_script()
 
-LONG = " ".join(f"word{i}" for i in range(200))
+LONG = " ".join(f"word{i}" for i in range(400))
 SHORT = "Done. Two files changed."
 
 
@@ -63,8 +63,8 @@ class Options(unittest.TestCase):
     def test_defaults(self):
         opts = hook.options({})
         self.assertEqual(opts["model"], hook.DEFAULTS["model"])
-        self.assertEqual(opts["min_words"], 120)
-        self.assertEqual(opts["max_points"], 5)
+        self.assertEqual(opts["min_words"], 300)
+        self.assertEqual(opts["max_points"], 10)
         self.assertEqual(opts["heading"], "TL;DR")
         self.assertEqual(opts["timeout"], 40)
 
@@ -91,7 +91,7 @@ class Options(unittest.TestCase):
         self.assertEqual(opts["heading"], "TL;DR")
         with mock.patch.object(hook, "warn") as warn:
             opts = hook.options({"CLAUDE_PLUGIN_OPTION_MIN_WORDS": "many"})
-        self.assertEqual(opts["min_words"], 120)
+        self.assertEqual(opts["min_words"], 300)
         warn.assert_called_once()
 
 
@@ -125,7 +125,7 @@ class ChildEnv(unittest.TestCase):
         self.assertEqual(cmd[cmd.index("--model") + 1], hook.DEFAULTS["model"])
         self.assertNotIn("--bare", cmd)
         system = cmd[cmd.index("--system-prompt") + 1]
-        self.assertIn("at most 5 points", system)
+        self.assertIn("at most 10 points", system)
         self.assertIn("simple and concise language", system)
         self.assertTrue(system.endswith("single word NONE."))
 
@@ -312,7 +312,7 @@ class Instructions(unittest.TestCase):
         parts, warn = self.parts()
         self.assertEqual([source for source, _ in parts], ["the plugin", "the format rules, fixed"])
         self.assertEqual(parts[0][1], hook.BUILT_IN)
-        self.assertIn("at most 5 points", parts[1][1])
+        self.assertIn("at most 10 points", parts[1][1])
         warn.assert_not_called()
 
     def test_inline_option_is_added_after_the_built_in(self):

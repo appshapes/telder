@@ -32,7 +32,7 @@ Claude Code install gives you.
 
 ## What you see
 
-A reply shorter than about 120 words of prose is shown as it is. A longer one ends like this:
+A reply shorter than about 300 words of prose is shown as it is. A longer one ends like this:
 
 ```
   ... Dust, smoke and water droplets can make those colors even stronger.
@@ -69,8 +69,8 @@ and set them there.
 
 | Option | Default | Meaning |
 | --- | --- | --- |
-| `min_words` | `120` | a reply with fewer words of prose gets no summary; code and tables do not count; `0` summarizes every reply |
-| `max_points` | `5` | at most this many points, the most important first |
+| `min_words` | `300` | a reply with fewer words of prose gets no summary; code and tables do not count; `0` summarizes every reply |
+| `max_points` | `10` | at most this many points, the most important first |
 | `model` | `claude-opus-5-5` | the model that writes the summary, by its full name: `claude-sonnet-5-5` is a little faster and cheaper, `claude-fable-5-1` a little slower, `claude-haiku-4-5-20251001` the cheapest but slow and uneven when measured |
 | `heading` | `TL;DR` | the line above the points |
 | `timeout` | `40` | seconds to wait for the summary before showing the reply without one |

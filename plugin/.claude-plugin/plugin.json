@@ -18,7 +18,7 @@
       "type": "number",
       "title": "Shortest reply that gets a TL;DR",
       "description": "A reply with fewer words of prose than this gets no summary. Code blocks and table rows do not count. 0 summarizes every reply.",
-      "default": 120,
+      "default": 300,
       "min": 0,
       "max": 100000
     },
@@ -26,7 +26,7 @@
       "type": "number",
       "title": "Most points in a TL;DR",
       "description": "The summary is a list of at most this many points, the most important first.",
-      "default": 5,
+      "default": 10,
       "min": 1,
       "max": 10
     },

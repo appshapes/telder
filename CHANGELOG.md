@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- **Higher defaults.** `min_words` is now `300` (was `120`): a reply needs about three hundred words of prose
+  before it gets a summary, so short and medium replies are shown as they are. `max_points` is now `10` (was
+  `5`), the most the option allows, so a long reply's summary can carry more of its points. Both stay options.
+
 ## [0.1.0] — 2026-09-30
 
 ### Added

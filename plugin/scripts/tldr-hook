@@ -32,8 +32,8 @@ import time
 
 DEFAULTS = {
     "model": "claude-opus-5-5",
-    "min_words": 120,
-    "max_points": 5,
+    "min_words": 300,
+    "max_points": 10,
     "heading": "TL;DR",
     "timeout": 40,
     "instructions": "",
