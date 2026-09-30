@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.0] — 2026-09-30
+
 ### Added
 
 - **A TL;DR under every long reply.** When Claude Code finishes a reply longer than a few paragraphs, the `tldr`
