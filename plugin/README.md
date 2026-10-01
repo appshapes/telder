@@ -120,10 +120,11 @@ This section is the plugin's privacy statement.
 
 **About your login.** The summary is one more short message from your own Claude Code, so it runs under your own
 login and counts against your plan's usage like any other short turn of the chosen model. The plugin uses your
-login in that sense only. The script does not read, copy, print or store a credential. It starts `claude` with
-the environment of your session, minus the variables that describe the session itself, because that environment
-is what your `claude` already relies on to reach Anthropic: a configuration directory, a proxy, an API key if
-you use one. The script filters it by variable name and passes the rest on without looking at a value.
+login in that sense only. The script does not read, copy, print or store a credential. The `claude` it starts
+inherits the environment of your session, because that environment is what your `claude` already relies on to
+reach Anthropic: a configuration directory, a proxy, an API key if you use one. The script looks at the names of
+the variables only, to remove the ones that describe the session itself; the values it reads are the plugin's
+own options, the project directory and the plugin's data directory, each by its full name.
 
 ## How the summary is made
 

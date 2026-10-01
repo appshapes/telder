@@ -29,6 +29,9 @@
   to stderr. It spawns `claude -p` with an argument array and an environment stripped BY PREFIX of every variable
   whose name begins with `CLAUDE` — no underscore, so `CLAUDECODE` is covered — plus `AI_AGENT`, keeping only
   `CLAUDE_CONFIG_DIR`, and it sets `TLDR_INNER=1` so the nested session's own copy of the hook returns at once.
+  The strip is done on the hook's own environment, by name (`leave_session`), and the nested call inherits it: the
+  script never copies the environment and reads every variable by its literal name, because the directory's scan
+  holds a plugin that reads the environment as a whole or by a computed name (measured 2026-10-01).
   Never `--bare` on the nested call: bare mode reads no OAuth login, so every subscription user would get nothing.
 - Never put a secret in the hook's output, in a log line, on a card or in a file under the project directory. The
   script never reads the transcript file and never reads `$CLAUDE_CONFIG_DIR/sessions/*.key`; the reply text it

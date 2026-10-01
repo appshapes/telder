@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- **The script no longer copies your environment.** The model call that writes the summary needs the environment
+  your `claude` signs in with. The script used to copy all of it into that call; now it removes the variables
+  that describe the session from its own environment, by name, and the call inherits the rest. The script reads
+  the value of its own options, the project directory and its data directory, and of nothing else. What the
+  summary sees and where it goes are unchanged.
+
 ## [0.4.1] — 2026-09-30
 
 ### Changed

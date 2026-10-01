@@ -88,6 +88,10 @@ so a push is also a submission of a new version. What that asks of a change:
   `docs/assets/icon.svg` in a browser (a screenshot of the `svg` element with a transparent background). The
   directory takes its copy once, the first time the submission is saved or submitted in the portal, so a new
   icon in the repository does not change the listing afterwards.
+- **The script reads each environment variable by its literal name and never copies the environment.** The
+  nested `claude` inherits the hook's environment after `leave_session` has removed the session's variables from
+  it by name. The directory's scan holds a script that reads the environment as a whole, or a variable whose
+  name is computed, as "uses a credential from the user's machine".
 - **The name `telder` is permanent** once listed; `displayName` (`Telder`) is the label that can change.
 - **Raise `version` with every release**, which `make release` does.
 
