@@ -16,7 +16,7 @@ writes it through your own `claude` login, Opus by default. Nothing to configure
 | change what the summary focuses on, its language, its voice | [Change the instructions](#change-the-instructions) |
 | change how long a reply must be, how many points, which model | [Options](#options) |
 | update the plugin | [Update](#update) |
-| know what the plugin sees, and where it goes | [`plugin/README.md` › What the plugin sees](plugin/README.md#what-the-plugin-sees) |
+| know what the plugin sees, and where it goes | [`plugin/README.md` › What leaves your machine](plugin/README.md#what-leaves-your-machine-and-where-it-goes) |
 | see what changed in a release | [`CHANGELOG.md`](CHANGELOG.md) |
 | work on Telder | [`docs/development.md`](docs/development.md) |
 
@@ -105,7 +105,8 @@ Nothing to do. Claude Code updates the plugin in the background and tells you to
 
 ## More
 
-- [plugin/README.md](plugin/README.md) — what the plugin ships, what it sees, and how the summary is made
+- [plugin/README.md](plugin/README.md) — the plugin's own page, which the directory shows as its listing: what leaves
+  your machine, how the summary is made, what to check when no summary appears
 - [docs/development.md](docs/development.md) — working on Telder: setup, gates, the dev loop, releases, layout
 - [docs/claude-code-usage.md](docs/claude-code-usage.md) — working on Telder with Claude Code: skills, the Trello CLI
 - [CHANGELOG.md](CHANGELOG.md) — what changed in each release

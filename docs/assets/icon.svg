@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" rx="224" fill="#0f2f5c"/>
+  <!-- one session's reply -->
+  <rect x="192" y="136" width="640" height="752" rx="48" fill="#ffffff"/>
+  <!-- the long reply -->
+  <rect x="256" y="204" width="48" height="22" rx="11" fill="#0f2f5c"/>
+  <rect x="324" y="204" width="380" height="22" rx="11" fill="#0f2f5c" opacity="0.35"/>
+  <rect x="256" y="262" width="512" height="22" rx="11" fill="#0f2f5c" opacity="0.35"/>
+  <rect x="256" y="320" width="456" height="22" rx="11" fill="#0f2f5c" opacity="0.35"/>
+  <rect x="256" y="378" width="512" height="22" rx="11" fill="#0f2f5c" opacity="0.35"/>
+  <rect x="256" y="436" width="340" height="22" rx="11" fill="#0f2f5c" opacity="0.35"/>
+  <!-- the rule, and the summary under it -->
+  <rect x="256" y="520" width="512" height="10" rx="5" fill="#0f2f5c" opacity="0.18"/>
+  <circle cx="284" cy="620" r="28" fill="#f2a23a"/>
+  <rect x="344" y="592" width="400" height="56" rx="28" fill="#f2a23a"/>
+  <circle cx="284" cy="712" r="28" fill="#f2a23a"/>
+  <rect x="344" y="684" width="300" height="56" rx="28" fill="#f2a23a"/>
+  <circle cx="284" cy="804" r="28" fill="#f2a23a"/>
+  <rect x="344" y="776" width="200" height="56" rx="28" fill="#f2a23a"/>
+</svg>

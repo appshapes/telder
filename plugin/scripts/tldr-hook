@@ -287,6 +287,15 @@ def accumulator_path(env, data):
     return os.path.join(data_dir(env), "chunks", key)
 
 
+def private_dir(folder):
+    """Create `folder` for this user only (0700), and narrow one an earlier version made with the default mode."""
+    os.makedirs(folder, mode=0o700, exist_ok=True)
+    try:
+        os.chmod(folder, 0o700)
+    except OSError:
+        pass
+
+
 def sweep_stale(env, max_age=3600):
     """Chunk files older than max_age seconds are from messages that never reached their final chunk."""
     folder = os.path.join(data_dir(env), "chunks")
@@ -325,9 +334,10 @@ def handle_stop(data, opts, env):
 def handle_message_display(data, opts, env):
     delta = data.get("delta") or ""
     path = accumulator_path(env, data)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    private_dir(os.path.dirname(path))
     if delta:
-        with open(path, "a", encoding="utf-8") as chunk_file:
+        # The pieces are reply text: the file is readable by this user only, like the folder that holds it.
+        with open(os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600), "a", encoding="utf-8") as chunk_file:
             chunk_file.write(delta)
     if not data.get("final"):
         return None

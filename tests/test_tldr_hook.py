@@ -247,6 +247,18 @@ class MessageDisplayEvent(unittest.TestCase):
             self.assertEqual(run.calls[0][1]["input"].split(), LONG.split())
             self.assertEqual(os.listdir(os.path.join(folder, "chunks")), [])
 
+    @unittest.skipIf(os.name == "nt", "POSIX file modes")
+    def test_the_pieces_are_readable_by_this_user_only(self):
+        with tempfile.TemporaryDirectory() as folder:
+            env = {"CLAUDE_PLUGIN_DATA": folder}
+            chunks = os.path.join(folder, "chunks")
+            os.makedirs(chunks, mode=0o755)  # as an earlier version left it
+            os.chmod(chunks, 0o755)
+            data = {"hook_event_name": "MessageDisplay", "session_id": "s", "message_id": "m", "delta": "a piece ", "final": False}
+            self.assertEqual(self.run_hook(data, env, fake_run("- x")), "")
+            self.assertEqual(os.stat(chunks).st_mode & 0o777, 0o700)
+            self.assertEqual(os.stat(os.path.join(chunks, "s-m")).st_mode & 0o777, 0o600)
+
     def test_headless_shape_one_final_chunk_with_the_whole_message(self):
         with tempfile.TemporaryDirectory() as folder:
             env = {"CLAUDE_PLUGIN_DATA": folder}

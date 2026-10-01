@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- **A listing for Anthropic's plugin directory.** The plugin now carries an icon, the display name `Telder`, and
+  links to its documentation, its support page and its privacy statement. The plugin's README is rewritten as
+  that listing: what you see, three things to try, the options, and a section that says plainly what the plugin
+  fetches, sends, reads, writes and runs on your machine, and for how long anything is kept.
+
+### Changed
+
+- **The reply being shown is kept for your user only.** While a reply is on its way to the screen, its pieces
+  wait in a file under the plugin's data directory. That file and its folder are now readable by your user alone
+  (they followed the machine's default before, which on most machines lets other local users read them). The file
+  is still deleted the moment the reply is complete.
+
 ## [0.3.0] — 2026-09-30
 
 ### Changed

@@ -10,6 +10,8 @@
 # 3  plugin.json "version" is one version token       6  the hook script compiles under python3
 # 4  no bin/, no mcpServers, no channels under plugin/ 7  sh -n and shellcheck -s sh on every shell script
 #                                                     8  no skill declares disable-model-invocation
+#                                                     9  the listing icon is a square PNG the directory accepts,
+#                                                        and the plugin README stays clear of two directory holds
 #
 # Why textual JSON checks: hooks.json and plugin.json are small hand-written manifests, jq is not on every host
 # that runs `make plugin-check`, and the schema half is covered by `make plugin-validate` (`claude plugin validate
@@ -31,7 +33,7 @@ hook_script=plugin/scripts/tldr-hook
 find plugin -type f -print | LC_ALL=C sort | while IFS= read -r f; do
   rel=${f#plugin/}
   case $rel in
-    .claude-plugin/plugin.json|hooks/hooks.json|scripts/tldr-hook|README.md) ;;
+    .claude-plugin/plugin.json|.claude-plugin/icon.png|hooks/hooks.json|scripts/tldr-hook|README.md) ;;
     skills/*/*) ;;   # a skill directory and whatever it carries beside its SKILL.md
     *) die "not allow-listed under plugin/: $f" ;;
   esac
@@ -130,5 +132,33 @@ for f in plugin/skills/*/SKILL.md; do
 done
 [ -z "$disabled" ] || die "disable-model-invocation is declared in:$disabled -- every skill stays reachable by the model"
 ok "no skill declares disable-model-invocation"
+
+# ---- 9. what Anthropic's plugin directory checks, and `claude plugin validate` does not -----------------------------
+# The directory takes the listing icon from .claude-plugin/icon.png: a square PNG, 512 to 2048 px a side, under
+# 2 MB. The size is read from the PNG header (bytes 16 to 23 of the file), so no image library is needed.
+icon=plugin/.claude-plugin/icon.png
+[ -f "$icon" ] || die "missing $icon (the directory's listing icon)"
+python3 - "$icon" <<'PY' || die "$icon is not a square PNG of 512 to 2048 px a side and under 2 MB"
+import struct
+import sys
+
+data = open(sys.argv[1], "rb").read()
+ok = data[:8] == b"\x89PNG\r\n\x1a\n" and data[12:16] == b"IHDR" and len(data) < 2 * 1024 * 1024
+if ok:
+    width, height = struct.unpack(">II", data[16:24])
+    ok = width == height and 512 <= width <= 2048
+sys.exit(0 if ok else 1)
+PY
+# The directory's scan holds a plugin whose README names a shell variable beside a URL ("uses a credential from
+# the user's machine"; Brigade measured it on `$PWD`), and one that names a bundled image in backticks.
+readme=plugin/README.md
+[ -f "$readme" ] || die "missing $readme (the directory shows it as the listing)"
+if grep -n '\$' "$readme" >&2; then
+  die "$readme contains a dollar sign: the directory's scan reads a shell variable there as a credential"
+fi
+if grep -n 'icon\.png' "$readme" >&2; then
+  die "$readme names the icon file: the directory's scan holds a bundled image that a README names"
+fi
+ok "$icon is a square PNG the directory accepts, and $readme has no dollar sign and does not name the icon"
 
 printf 'plugin-check: all checks passed\n'

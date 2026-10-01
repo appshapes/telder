@@ -16,6 +16,7 @@ release is cut. Users want the front [`README.md`](../README.md) and [`plugin/RE
 | commit and push | `make push message="<card>: …"`, or `/commit <card>` |
 | read or create a Trello card | [`docs/claude-code-usage.md` › Trello CLI](claude-code-usage.md#trello-cli) |
 | cut a release | [Releases](#releases) |
+| change what Anthropic's directory lists | [The directory listing](#the-directory-listing) |
 | see what a CI script does | [Layout](#layout) |
 
 ## Setup
@@ -40,8 +41,9 @@ workflow step invokes.
   it needs no login and no network.
 - `make plugin-check`: `scripts/ci/plugin-check.sh` (the `plugin/` file allowlist, the script's mode in git, the
   version pin, no `bin/` or MCP, exec-form hooks with a timeout each, the script compiles, shellcheck, every
-  skill reachable by the model) and then `scripts/ci/no-secrets.sh` (nine credential shapes over every tracked
-  and plugin file).
+  skill reachable by the model, the listing icon's shape and two rules for the plugin README that the
+  directory's scan enforces) and then `scripts/ci/no-secrets.sh` (nine credential shapes over every tracked and
+  plugin file).
 - `make plugin-validate`: `claude plugin validate` on the marketplace and, strictly, on the plugin. Login-free.
 
 `master` only, merges only, never rebase; commit messages `<card>: <Imperative summary>`, through
@@ -68,6 +70,32 @@ the GitHub release with it as the notes. Claude Code updates the plugin from the
 and asks for `/reload-plugins`. A published tag is never moved: bump the patch version instead. A tree that has
 never been released carries `0.0.0`, which the script refuses to release.
 
+## The directory listing
+
+The plugin is submitted to Anthropic's plugin directory from this repository, folder `plugin`, branch `master`,
+through the developer portal at `claude.ai/directory/manage`. The directory scans every new commit on `master`,
+so a push is also a submission of a new version. What that asks of a change:
+
+- **`plugin/README.md` is the listing.** The directory shows it as the description, and its section "What leaves
+  your machine, and where it goes" is the privacy statement the manifest's `privacyPolicyUrl` points at. When the
+  script starts to read, write, send or run something new, that section changes in the same commit. Links in it
+  are absolute, because the listing is shown outside the repository. It carries its own copy of the options
+  table, so an option's default changes in three places: the manifest, the front README and the plugin README.
+- **No dollar sign in `plugin/README.md`, and no mention of the icon file.** The directory's scan reads a shell
+  variable beside a URL as a credential leaving the machine, and holds a bundled image that a README names.
+  `make plugin-check` refuses both.
+- **The icon** is `plugin/.claude-plugin/icon.png`, a square PNG rendered at 1024 px from
+  `docs/assets/icon.svg` in a browser (a screenshot of the `svg` element with a transparent background). The
+  directory takes its copy once, the first time the submission is saved or submitted in the portal, so a new
+  icon in the repository does not change the listing afterwards.
+- **The name `tldr` is permanent** once listed; `displayName` (`Telder`) is the label that can change.
+- **Raise `version` with every release**, which `make release` does.
+
+The checks the portal runs, and what each finding means, are in Anthropic's
+[plugin pre-submission checklist](https://claude.com/docs/plugins/pre-submission-checklist);
+`.context/plans/directory-submission-2026-09-30.md` records what the portal said about Telder and why each
+remaining hold is left for a reviewer.
+
 ## Layout
 
 | Path | What |
@@ -77,7 +105,8 @@ never been released carries `0.0.0`, which the script refuses to release.
 | `plugin/hooks/hooks.json` | the one hook, exec form |
 | `plugin/scripts/tldr-hook` | the script: reads the hook input, gates on length, runs the nested `claude -p`, replies |
 | `plugin/skills/tldr/SKILL.md` | `/tldr`, `/tldr off`, `/tldr on`, `/tldr status` |
-| [`plugin/README.md`](../plugin/README.md) | what the plugin does, its options, what it sees |
+| [`plugin/README.md`](../plugin/README.md) | the plugin's own page and its listing in Anthropic's directory: what it does, its options, what leaves the machine |
+| `plugin/.claude-plugin/icon.png` | the listing icon, rendered from [`docs/assets/icon.svg`](assets/icon.svg) |
 | `tests/` | the unit tests and the sample hook input |
 | `scripts/ci/` | `plugin-check.sh`, `no-secrets.sh`, `release-notes.sh` |
 | `scripts/release-prep.sh` | the release sequence |

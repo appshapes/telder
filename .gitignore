@@ -25,3 +25,6 @@ __pycache__/
 .env
 .env.*
 !.env.example
+
+# playwright-cli page snapshots (they capture whole claude.ai pages); the canonical `git add :/ .` would sweep them in
+.playwright-cli/

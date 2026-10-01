@@ -1,12 +1,17 @@
 {
   "name": "tldr",
+  "displayName": "Telder",
   "version": "0.3.0",
-  "description": "A TL;DR under every long reply: the most important points first, as a plain list, in simple language, for a reader with no time.",
+  "description": "A TL;DR under every long Claude Code reply: the most important points first, as a plain list, in simple language, for a reader with no time.",
   "author": {
-    "name": "appshapes"
+    "name": "appshapes",
+    "url": "https://github.com/appshapes"
   },
   "homepage": "https://github.com/appshapes/telder",
   "repository": "https://github.com/appshapes/telder",
+  "documentationUrl": "https://github.com/appshapes/telder#readme",
+  "supportUrl": "https://github.com/appshapes/telder/issues",
+  "privacyPolicyUrl": "https://github.com/appshapes/telder/blob/master/plugin/README.md#what-leaves-your-machine-and-where-it-goes",
   "license": "MIT",
   "keywords": [
     "summary",
