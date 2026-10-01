@@ -99,10 +99,23 @@ class ChildEnv(unittest.TestCase):
     def test_strips_by_prefix_and_keeps_config_dir(self):
         env = {"PATH": "/usr/bin", "CLAUDECODE": "1", "CLAUDE_PID": "7", "CLAUDE_CODE_SESSION_ID": "x",
                "CLAUDE_EFFORT": "high", "AI_AGENT": "claude", "AI_AGENT_X": "y", "CLAUDE_CONFIG_DIR": "/cfg", "HOME": "/h"}
-        out = hook.child_env(env)
-        self.assertEqual(sorted(out), ["CLAUDE_CONFIG_DIR", "HOME", "PATH", hook.INNER_MARK])
-        self.assertEqual(out["CLAUDE_CONFIG_DIR"], "/cfg")
-        self.assertEqual(out[hook.INNER_MARK], "1")
+        hook.leave_session(env)
+        self.assertEqual(sorted(env), ["CLAUDE_CONFIG_DIR", "HOME", "PATH", "TLDR_INNER"])
+        self.assertEqual(env["CLAUDE_CONFIG_DIR"], "/cfg")
+        self.assertEqual(env["TLDR_INNER"], "1")
+
+    def test_a_real_child_inherits_the_prepared_environment(self):
+        # The nested call is given no environment of its own: it inherits this process's, so what leave_session
+        # removes from os.environ has to be gone for a child too.
+        show = "import json, os; print(json.dumps(sorted(k for k in os.environ if k.startswith(('CLAUDE', 'AI_AGENT', 'TLDR')))))"
+        with mock.patch.dict(os.environ, {"CLAUDECODE": "1", "CLAUDE_CODE_SESSION_ID": "x", "AI_AGENT": "claude",
+                                          "CLAUDE_CONFIG_DIR": "/cfg"}):
+            for name in hook.session_variables(list(os.environ)):
+                if name not in ("CLAUDECODE", "CLAUDE_CODE_SESSION_ID", "AI_AGENT"):
+                    os.environ.pop(name)  # whatever the session running the tests itself exports
+            hook.leave_session(os.environ)
+            child = subprocess.run([sys.executable, "-c", show], capture_output=True, text=True)
+        self.assertEqual(json.loads(child.stdout), ["CLAUDE_CONFIG_DIR", "TLDR_INNER"])
 
     def test_claude_command_prefers_the_running_executable(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -152,13 +165,14 @@ class Summarize(unittest.TestCase):
     def test_runs_claude_with_the_text_on_stdin(self):
         run = fake_run("- a\n- b\n")
         with mock.patch.object(hook, "warn"):
-            out = hook.summarize(LONG, hook.options({}), {"PATH": "/usr/bin", "CLAUDECODE": "1"}, run=run)
+            env = {"PATH": "/usr/bin", "CLAUDECODE": "1"}
+            out = hook.summarize(LONG, hook.options({}), env, run=run)
         self.assertEqual(out, "- a\n- b")
         cmd, kwargs = run.calls[0]
         self.assertEqual(kwargs["input"], LONG)
         self.assertEqual(kwargs["timeout"], 90)
-        self.assertNotIn("CLAUDECODE", kwargs["env"])
-        self.assertEqual(kwargs["env"][hook.INNER_MARK], "1")
+        self.assertNotIn("env", kwargs)  # the nested call inherits the environment leave_session prepared
+        self.assertEqual(env, {"PATH": "/usr/bin", "TLDR_INNER": "1"})
 
     def test_failure_paths_return_none(self):
         with mock.patch.object(hook, "warn") as warn:

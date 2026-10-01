@@ -43,7 +43,6 @@ DEFAULTS = {
 MIN_TIMEOUT, MAX_TIMEOUT = 10, 120
 MAX_INSTRUCTIONS_BYTES = 8192
 PROJECT_FILE = ".telder.md"
-INNER_MARK = "TLDR_INNER"
 NONE_MARK = "NONE"
 
 BUILT_IN = (
@@ -66,27 +65,38 @@ HEADING_LINE = re.compile(r"^\s*(\*\*)?\s*(tl;?dr|summary)\s*:?\s*(\*\*)?\s*:?\s
 
 # ---- options ---------------------------------------------------------------------------------------------------
 
-def options(env):
-    """The plugin's options, from the CLAUDE_PLUGIN_OPTION_* variables Claude Code exports, with defaults."""
+def options(environ):
+    """The plugin's options, from the CLAUDE_PLUGIN_OPTION_* variables Claude Code exports, with defaults. Each
+    variable is read here by its full name, so this table is every option variable the script looks at."""
+    given = {
+        "model": environ.get("CLAUDE_PLUGIN_OPTION_MODEL"),
+        "heading": environ.get("CLAUDE_PLUGIN_OPTION_HEADING"),
+        "instructions": environ.get("CLAUDE_PLUGIN_OPTION_INSTRUCTIONS"),
+        "instructions_file": environ.get("CLAUDE_PLUGIN_OPTION_INSTRUCTIONS_FILE"),
+        "instructions_mode": environ.get("CLAUDE_PLUGIN_OPTION_INSTRUCTIONS_MODE"),
+        "min_words": environ.get("CLAUDE_PLUGIN_OPTION_MIN_WORDS"),
+        "max_points": environ.get("CLAUDE_PLUGIN_OPTION_MAX_POINTS"),
+        "timeout": environ.get("CLAUDE_PLUGIN_OPTION_TIMEOUT"),
+    }
     opts = dict(DEFAULTS)
-    model = (env.get("CLAUDE_PLUGIN_OPTION_MODEL") or "").strip()
+    model = (given["model"] or "").strip()
     if model:
         opts["model"] = model
-    heading = env.get("CLAUDE_PLUGIN_OPTION_HEADING")
+    heading = given["heading"]
     if heading is not None and heading.strip():
         opts["heading"] = heading.strip()
     for key in ("instructions", "instructions_file"):
-        value = env.get("CLAUDE_PLUGIN_OPTION_" + key.upper())
+        value = given[key]
         if value is not None:
             opts[key] = value.strip()
-    mode = (env.get("CLAUDE_PLUGIN_OPTION_INSTRUCTIONS_MODE") or "").strip().lower()
+    mode = (given["instructions_mode"] or "").strip().lower()
     if mode:
         if mode in ("add", "replace"):
             opts["instructions_mode"] = mode
         else:
             warn(f"option instructions_mode={mode!r} is neither add nor replace; using add")
     for key, low, high in (("min_words", 0, 100000), ("max_points", 1, 10), ("timeout", MIN_TIMEOUT, MAX_TIMEOUT)):
-        raw = env.get("CLAUDE_PLUGIN_OPTION_" + key.upper())
+        raw = given[key]
         if raw is None or not str(raw).strip():
             continue
         try:
@@ -157,9 +167,9 @@ def instructions_report(parts):
     return "".join(f"From {source}:\n{text}\n\n" for source, text in parts).rstrip() + "\n"
 
 
-def project_dir_of(env, data):
+def project_dir_of(environ, data):
     """The project root: CLAUDE_PROJECT_DIR, which Claude Code exports to its hooks, else the hook input's cwd."""
-    given = (env.get("CLAUDE_PROJECT_DIR") or "").strip()
+    given = (environ.get("CLAUDE_PROJECT_DIR") or "").strip()
     if given:
         return given
     cwd = (data.get("cwd") or "").strip() if isinstance(data, dict) else ""
@@ -206,27 +216,34 @@ def clean_summary(text, max_points):
 
 # ---- the nested claude call -------------------------------------------------------------------------------------
 
-def child_env(env):
-    """The environment for the nested `claude -p`: every CLAUDE*-prefixed variable (no underscore, so CLAUDECODE is
-    covered) and AI_AGENT* removed, CLAUDE_CONFIG_DIR kept so a second persona keeps its own login, and the
-    marker that tells the nested session's own copy of this hook to return at once."""
-    out = {k: v for k, v in env.items()
-           if not ((k.startswith("CLAUDE") and k != "CLAUDE_CONFIG_DIR") or k.startswith("AI_AGENT"))}
-    out[INNER_MARK] = "1"
-    return out
+def session_variables(names):
+    """Those of `names` that describe the running session: every CLAUDE*-prefixed variable (no underscore, so
+    CLAUDECODE is covered) and AI_AGENT*, apart from CLAUDE_CONFIG_DIR, which a second persona's login needs."""
+    return [name for name in names
+            if (name.startswith("CLAUDE") and name != "CLAUDE_CONFIG_DIR") or name.startswith("AI_AGENT")]
 
 
-def claude_command(env):
+def leave_session(environ):
+    """Make this process's own environment the one the nested `claude -p` inherits: the session's variables are
+    removed by name, and the marker that makes the nested session's copy of this hook return at once is set.
+    Only names are looked at. No value is read, copied or printed: what the person's `claude` needs to reach
+    its login (a configuration directory, a proxy, an API key) passes from Claude Code to it untouched."""
+    for name in session_variables(list(environ.keys())):
+        environ.pop(name, None)
+    environ["TLDR_INNER"] = "1"
+
+
+def claude_command(environ):
     """The `claude` to run: the executable that runs this session when Claude Code names it, else `claude` on PATH."""
-    exe = (env.get("CLAUDE_CODE_EXECPATH") or "").strip()
+    exe = (environ.get("CLAUDE_CODE_EXECPATH") or "").strip()
     if exe and os.path.isfile(exe) and os.access(exe, os.X_OK):
         return exe
     return "claude"
 
 
-def summarize_command(env, opts, system):
+def summarize_command(environ, opts, system):
     return [
-        claude_command(env), "-p",
+        claude_command(environ), "-p",
         "--model", opts["model"],
         "--output-format", "text",
         "--system-prompt", system,
@@ -239,14 +256,17 @@ def summarize_command(env, opts, system):
     ]
 
 
-def summarize(text, opts, env, project_dir=None, run=None):
-    """The summary of `text` as a list, or None when the model had nothing to say or could not be reached."""
+def summarize(text, opts, environ, project_dir=None, run=None):
+    """The summary of `text` as a list, or None when the model had nothing to say or could not be reached. The
+    nested call inherits this process's environment, which leave_session has just prepared; the hook reads
+    nothing from it afterwards and exits."""
     run = subprocess.run if run is None else run
     system = instructions_text(instruction_parts(opts, project_dir))
-    cmd = summarize_command(env, opts, system)
+    cmd = summarize_command(environ, opts, system)
+    leave_session(environ)
     started = time.monotonic()
     try:
-        result = run(cmd, input=text, capture_output=True, text=True, env=child_env(env), timeout=opts["timeout"])
+        result = run(cmd, input=text, capture_output=True, text=True, timeout=opts["timeout"])
     except subprocess.TimeoutExpired:
         warn(f"the summarizing model did not answer within {opts['timeout']}s")
         return None
@@ -265,26 +285,26 @@ def summarize(text, opts, env, project_dir=None, run=None):
 
 # ---- state: the mute, and the chunk accumulator -------------------------------------------------------------------
 
-def data_dir(env):
+def data_dir(environ):
     """Where state lives: CLAUDE_PLUGIN_DATA (kept across updates), else a per-user temporary directory."""
-    given = (env.get("CLAUDE_PLUGIN_DATA") or "").strip()
+    given = (environ.get("CLAUDE_PLUGIN_DATA") or "").strip()
     if given:
         return given
     uid = os.getuid() if hasattr(os, "getuid") else "user"
     return os.path.join(tempfile.gettempdir(), f"tldr-{uid}")
 
 
-def mute_path(env):
-    return os.path.join(data_dir(env), "mute")
+def mute_path(environ):
+    return os.path.join(data_dir(environ), "mute")
 
 
-def muted(env):
-    return os.path.exists(mute_path(env))
+def muted(environ):
+    return os.path.exists(mute_path(environ))
 
 
-def accumulator_path(env, data):
+def accumulator_path(environ, data):
     key = re.sub(r"[^A-Za-z0-9_-]", "_", f"{data.get('session_id', 's')}-{data.get('message_id', 'm')}")
-    return os.path.join(data_dir(env), "chunks", key)
+    return os.path.join(data_dir(environ), "chunks", key)
 
 
 def private_dir(folder):
@@ -296,9 +316,9 @@ def private_dir(folder):
         pass
 
 
-def sweep_stale(env, max_age=3600):
+def sweep_stale(environ, max_age=3600):
     """Chunk files older than max_age seconds are from messages that never reached their final chunk."""
-    folder = os.path.join(data_dir(env), "chunks")
+    folder = os.path.join(data_dir(environ), "chunks")
     try:
         names = os.listdir(folder)
     except OSError:
@@ -319,21 +339,21 @@ def format_summary(heading, summary):
     return f"{heading}\n{summary}"
 
 
-def handle_stop(data, opts, env):
+def handle_stop(data, opts, environ):
     if data.get("stop_reason") not in (None, "end_turn"):
         return None
     text = data.get("last_assistant_message") or ""
     if prose_words(text) < opts["min_words"]:
         return None
-    summary = summarize(text, opts, env, project_dir_of(env, data))
+    summary = summarize(text, opts, environ, project_dir_of(environ, data))
     if summary is None:
         return None
     return {"systemMessage": format_summary(opts["heading"], summary)}
 
 
-def handle_message_display(data, opts, env):
+def handle_message_display(data, opts, environ):
     delta = data.get("delta") or ""
-    path = accumulator_path(env, data)
+    path = accumulator_path(environ, data)
     private_dir(os.path.dirname(path))
     if delta:
         # The pieces are reply text: the file is readable by this user only, like the folder that holds it.
@@ -347,10 +367,10 @@ def handle_message_display(data, opts, env):
         os.remove(path)
     except OSError:
         text = delta
-    sweep_stale(env)
+    sweep_stale(environ)
     if prose_words(text) < opts["min_words"]:
         return None
-    summary = summarize(text, opts, env, project_dir_of(env, data))
+    summary = summarize(text, opts, environ, project_dir_of(environ, data))
     if summary is None:
         return None
     shown = delta + ("\n\n" if delta else "") + "---\n**" + opts["heading"] + "**\n" + summary
@@ -360,8 +380,8 @@ def handle_message_display(data, opts, env):
 HANDLERS = {"Stop": handle_stop, "MessageDisplay": handle_message_display}
 
 
-def run_hook(stdin, stdout, env):
-    if env.get(INNER_MARK):
+def run_hook(stdin, stdout, environ):
+    if environ.get("TLDR_INNER"):
         return 0
     try:
         data = json.load(stdin)
@@ -370,12 +390,12 @@ def run_hook(stdin, stdout, env):
         return 0
     if not isinstance(data, dict):
         return 0
-    if muted(env):
+    if muted(environ):
         return 0
     handler = HANDLERS.get(data.get("hook_event_name"))
     if handler is None:
         return 0
-    reply = handler(data, options(env), env)
+    reply = handler(data, options(environ), environ)
     if reply is not None:
         stdout.write(json.dumps(reply) + "\n")
         stdout.flush()
@@ -402,22 +422,20 @@ def take_value(args, flag):
     return value
 
 
-def run_command(argv, stdin, stdout, env):
+def run_command(argv, stdin, stdout, environ):
     args = list(argv)
     try:
         data_dir_arg = take_value(args, "--data-dir")
         if args and args[0] == "instructions":
-            return run_instructions(args[1:], stdin, stdout, env)
+            return run_instructions(args[1:], stdin, stdout, environ)
     except ValueError as error:
         warn(str(error))
         warn(USAGE)
         return 2
-    if data_dir_arg:
-        env = dict(env, CLAUDE_PLUGIN_DATA=data_dir_arg)
     if len(args) != 1 or args[0] not in ("off", "on", "status"):
         warn(USAGE)
         return 2
-    path = mute_path(env)
+    path = os.path.join(data_dir_arg, "mute") if data_dir_arg else mute_path(environ)
     if args[0] == "off":
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w", encoding="utf-8") as mute_file:
@@ -434,7 +452,7 @@ def run_command(argv, stdin, stdout, env):
     return 0
 
 
-def run_instructions(args, stdin, stdout, env):
+def run_instructions(args, stdin, stdout, environ):
     """Print the instructions in effect, each part with where it came from. The option values come as arguments,
     because the model's Bash commands do not carry the CLAUDE_PLUGIN_OPTION_* variables the hook gets."""
     args = list(args)
@@ -461,14 +479,14 @@ def run_instructions(args, stdin, stdout, env):
     return 0
 
 
-def main(argv=None, stdin=None, stdout=None, env=None):
+def main(argv=None, stdin=None, stdout=None, environ=None):
     argv = sys.argv[1:] if argv is None else argv
     stdin = sys.stdin if stdin is None else stdin
     stdout = sys.stdout if stdout is None else stdout
-    env = os.environ if env is None else env
+    environ = os.environ if environ is None else environ
     if argv:
-        return run_command(argv, stdin, stdout, env)
-    return run_hook(stdin, stdout, env)
+        return run_command(argv, stdin, stdout, environ)
+    return run_hook(stdin, stdout, environ)
 
 
 if __name__ == "__main__":
