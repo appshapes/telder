@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.4.2] — 2026-10-01
+
 ### Changed
 
 - **The script no longer copies your environment.** The model call that writes the summary needs the environment
