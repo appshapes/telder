@@ -1,5 +1,5 @@
 {
-  "name": "tldr",
+  "name": "telder",
   "displayName": "Telder",
   "version": "0.3.0",
   "description": "A TL;DR under every long Claude Code reply: the most important points first, as a plain list, in simple language, for a reader with no time.",

@@ -37,7 +37,7 @@ nothing else. If your previous reply was already a short list or a single questi
 
 Relay the command's output as it is, under a one-line lead saying these are the instructions the summaries
 follow. Then say how to change them: the `instructions`, `instructions_file` and `instructions_mode` options of
-the plugin (`/plugin`, then `tldr`), and a `.telder.md` file at the project root.
+the plugin (`/plugin`, then `telder`), and a `.telder.md` file at the project root.
 
 ## `off`, `on`, `status`: the automatic summaries
 

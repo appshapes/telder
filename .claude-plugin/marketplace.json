@@ -7,7 +7,7 @@
   },
   "plugins": [
     {
-      "name": "tldr",
+      "name": "telder",
       "source": "./plugin",
       "description": "Appends a short, plain-language summary under every long reply: the most important points first, as a list, for a reader with no time.",
       "repository": "https://github.com/appshapes/telder",

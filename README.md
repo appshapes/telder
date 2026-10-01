@@ -2,7 +2,7 @@
 
 [![release](https://img.shields.io/github/v/release/appshapes/telder)](https://github.com/appshapes/telder/releases/latest)
 
-A TL;DR under every long Claude Code reply. When a reply runs past a few paragraphs, the `tldr` plugin adds a
+A TL;DR under every long Claude Code reply. When a reply runs past a few paragraphs, the `telder` plugin adds a
 short list under it: the most important points first, in simple language, for a reader with no time. A model
 writes it through your own `claude` login, Opus by default. Nothing to configure, no API key.
 
@@ -24,11 +24,16 @@ writes it through your own `claude` login, Opus by default. Nothing to configure
 
 1. Open Claude Code.
 2. Type `/plugin marketplace add appshapes/telder`.
-3. Type `/plugin install tldr@telder`. When it asks where to install, choose **user**.
+3. Type `/plugin install telder@telder`. When it asks where to install, choose **user**.
 4. Type `/reload-plugins`.
 
 You need `python3` on your machine (macOS and Linux have it) and the `claude` command on your `PATH`, which the
 Claude Code install gives you.
+
+**Installed before 0.4.0?** The plugin was named `tldr` then, and that name gets no more updates. In a terminal:
+`claude plugin uninstall tldr@telder`, `claude plugin marketplace update telder`,
+`claude plugin install telder@telder`; then `/reload-plugins` in your session. Options you had set need setting
+again under the new name.
 
 ## What you see
 
@@ -61,10 +66,10 @@ does not answer in time, the reply is shown without one.
 Ask your session, for example:
 
 ```
-Set the tldr plugin's min_words to 200 and max_points to 3.
+Set the telder plugin's min_words to 200 and max_points to 3.
 ```
 
-It edits your user settings; start a new session for the change to take effect. Or type `/plugin`, open `tldr`,
+It edits your user settings; start a new session for the change to take effect. Or type `/plugin`, open `telder`,
 and set them there.
 
 | Option | Default | Meaning |
@@ -87,7 +92,7 @@ The summary follows instructions in layers, in this order:
 2. Your `instructions` option: a sentence or a few, for example:
 
    ```
-   Set the tldr plugin's instructions to: Write it in French. Say first what I must do next.
+   Set the telder plugin's instructions to: Write it in French. Say first what I must do next.
    ```
 
 3. Your `instructions_file` option: a text file, for longer instructions. It is read at every summary, so an

@@ -10,7 +10,9 @@
 # Telder
 - Start here: `.context/plans/handoff-2026-09-30.md` (state) and `.context/plans/telder-build-2026-09-30.md`
   (every measurement and decision).
-- Telder is the product; `tldr` is the plugin (`/plugin install tldr@telder`). The plugin is one command hook on
+- Telder is the product and `telder` the plugin (`/plugin install telder@telder`; it was `tldr` until 0.3.0, renamed
+  for the directory, where a name is permanent and `tldr` drew three look-alike holds); `/tldr` is its skill, and the
+  script, its log prefix and `TLDR_INNER` keep the old spelling. The plugin is one command hook on
   `MessageDisplay` (display-only: the summary never enters Claude's context; measured 2026-09-30, see
   `.context/plans/telder-build-2026-09-30.md` for why not `Stop` and never a `prompt` hook), one Python script and its
   skill under `plugin/`, the listing icon, and nothing else: no MCP server, no channel, no binary, no
@@ -21,7 +23,7 @@
   portal found). `plugin/README.md` is the listing and its privacy statement: when the script reads, writes, sends
   or runs something new, the section "What leaves your machine, and where it goes" changes in the same commit.
   Never a dollar sign in that README and never the icon's file name (the scan holds both; `make plugin-check`
-  refuses them). The name `tldr` is permanent once listed.
+  refuses them). The name `telder` is permanent once listed.
 - The hook script is Python 3, standard library only, one file (`plugin/scripts/tldr-hook`), launched in exec form
   (`command` + `args`, never a shell string). It never writes to stdout except the hook's JSON reply; diagnostics go
   to stderr. It spawns `claude -p` with an argument array and an environment stripped BY PREFIX of every variable

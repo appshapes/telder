@@ -88,7 +88,7 @@ so a push is also a submission of a new version. What that asks of a change:
   `docs/assets/icon.svg` in a browser (a screenshot of the `svg` element with a transparent background). The
   directory takes its copy once, the first time the submission is saved or submitted in the portal, so a new
   icon in the repository does not change the listing afterwards.
-- **The name `tldr` is permanent** once listed; `displayName` (`Telder`) is the label that can change.
+- **The name `telder` is permanent** once listed; `displayName` (`Telder`) is the label that can change.
 - **Raise `version` with every release**, which `make release` does.
 
 The checks the portal runs, and what each finding means, are in Anthropic's
@@ -101,7 +101,7 @@ remaining hold is left for a reviewer.
 | Path | What |
 | --- | --- |
 | [`CHANGELOG.md`](../CHANGELOG.md) | what changed in each release |
-| `plugin/.claude-plugin/plugin.json` | the manifest: name `tldr`, the version pin, the options |
+| `plugin/.claude-plugin/plugin.json` | the manifest: name `telder`, the version pin, the options |
 | `plugin/hooks/hooks.json` | the one hook, exec form |
 | `plugin/scripts/tldr-hook` | the script: reads the hook input, gates on length, runs the nested `claude -p`, replies |
 | `plugin/skills/tldr/SKILL.md` | `/tldr`, `/tldr off`, `/tldr on`, `/tldr status` |

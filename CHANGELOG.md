@@ -16,6 +16,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- **The plugin is now named `telder`** (it was `tldr`). A plugin's name is permanent once Anthropic's directory
+  lists it, so it now carries the product's own name; `/tldr` and everything it does are unchanged. An install
+  made under the old name gets no more updates. To move, in a terminal: `claude plugin uninstall tldr@telder`,
+  `claude plugin marketplace update telder`, `claude plugin install telder@telder`, then `/reload-plugins` in your
+  session. Options you had set need setting again, for example `Set the telder plugin's min_words to 200.`
 - **The reply being shown is kept for your user only.** While a reply is on its way to the screen, its pieces
   wait in a file under the plugin's data directory. That file and its folder are now readable by your user alone
   (they followed the machine's default before, which on most machines lets other local users read them). The file

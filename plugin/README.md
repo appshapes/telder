@@ -5,7 +5,7 @@ screen: the most important points first, in simple language, for a reader with n
 through the Claude Code login you already have. There is nothing to configure, no account to create and no API
 key to give.
 
-The plugin's name is `tldr`. It is one hook, one script and one skill, and it works in Claude Code.
+The plugin's name is `telder`. It is one hook, one script and one skill, `/tldr`, and it works in Claude Code.
 
 ## What you see
 
@@ -31,7 +31,7 @@ the reply is shown without one.
    ends with a rule, the heading `TL;DR` and a list of its main points.
 2. **Type `/tldr`** after any reply. Claude writes a TL;DR of its previous reply in the chat, under the same
    instructions as the automatic ones. This also works on a reply too short to get one by itself.
-3. **Make the summaries your own.** Ask `Set the tldr plugin's instructions to: Write it in French. Say first
+3. **Make the summaries your own.** Ask `Set the telder plugin's instructions to: Write it in French. Say first
    what I must do next.`, start a new session, and type `/tldr instructions` to see the instructions now in
    effect and where each part comes from.
 
@@ -47,12 +47,12 @@ is. The switch covers every session on this machine and needs no restart.
 - **The `claude` command**, which the Claude Code install gives you, signed in as usual.
 
 Outside the directory, the plugin installs from its own marketplace: in Claude Code, type
-`/plugin marketplace add appshapes/telder`, then `/plugin install tldr@telder`, then `/reload-plugins`.
+`/plugin marketplace add appshapes/telder`, then `/plugin install telder@telder`, then `/reload-plugins`.
 
 ## Options
 
-Eight, all optional. Ask your session, for example `Set the tldr plugin's min_words to 200 and max_points to 3.`,
-or type `/plugin`, open `tldr`, and set them there. A new session picks up the change.
+Eight, all optional. Ask your session, for example `Set the telder plugin's min_words to 200 and max_points to 3.`,
+or type `/plugin`, open `telder`, and set them there. A new session picks up the change.
 
 | Option | Default | Meaning |
 | --- | --- | --- |

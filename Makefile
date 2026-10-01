@@ -71,7 +71,7 @@ plugin-dev: ## Start Claude Code with the local plugin (usage: make plugin-dev [
 ifeq ($(opts),)
 	$(unclaude) claude $(if $(mode),--permission-mode $(mode)) --plugin-dir ./plugin
 else
-	$(unclaude) claude $(if $(mode),--permission-mode $(mode)) --plugin-dir ./plugin --settings '{"pluginConfigs":{"tldr@inline":{"options":$(opts)}}}'
+	$(unclaude) claude $(if $(mode),--permission-mode $(mode)) --plugin-dir ./plugin --settings '{"pluginConfigs":{"telder@inline":{"options":$(opts)}}}'
 endif
 
 # ========== Release ==========
