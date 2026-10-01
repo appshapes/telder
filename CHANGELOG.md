@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.4.1] — 2026-09-30
+
 ### Changed
 
 - **`/tldr` no longer depends on the script.** Where the plugin's script cannot run, such as the chat on
