@@ -453,5 +453,17 @@ class Instructions(unittest.TestCase):
         self.assertEqual(out.getvalue().count("From "), 2)
 
 
+class SkillFallback(unittest.TestCase):
+    """Where the script cannot run (the chat on claude.ai), the /tldr skill follows a copy of the plugin's own
+    instructions and format rules that SKILL.md carries; the copy must stay the script's text."""
+
+    def test_the_skill_carries_the_scripts_own_instructions(self):
+        with open(os.path.join(HERE, "..", "plugin", "skills", "tldr", "SKILL.md"), encoding="utf-8") as f:
+            skill = " ".join(f.read().split())
+        rules = hook.FORMAT_RULES.format(max_points=hook.DEFAULTS["max_points"], none=hook.NONE_MARK)
+        self.assertIn(" ".join(hook.BUILT_IN.split()), skill)
+        self.assertIn(" ".join(rules.split()), skill)
+
+
 if __name__ == "__main__":
     unittest.main()

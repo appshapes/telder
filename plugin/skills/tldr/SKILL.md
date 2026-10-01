@@ -27,6 +27,28 @@ ${user_config.instructions}
 TLDR_EOF
 ```
 
+## If the command cannot be run
+
+Where there is no shell or no `python3`, or the plugin's files are not on this machine (the chat on claude.ai, for
+one), do not try the command again and do not look for another way to run it. For no argument and for
+`instructions`, use this text in place of the command's output: it is the plugin's own instructions and its
+format rules, with the default of ten points.
+
+```
+You write the TL;DR of a reply an assistant just gave to a person. The person likely does not have much time to
+read. Summarize the salient points using simple and concise language. Limit or omit abbreviations. Do not use
+mannered prose. You are empowering someone to make a quick yet informed decision: highest priority items first,
+and keep it simple and short.
+
+Format: an unordered list only, one point per line, each line starting with '- ', at most 10 points, each point
+one short sentence. No heading, no preamble, no closing line, no code. If the reply is already a list of 10 or
+fewer short points, or is only a question to the person, answer with the single word NONE.
+```
+
+If the heading named below still reads as a placeholder in braces, the heading is `TL;DR`. For `off`, `on` and
+`status`, say in one line that the automatic summaries exist only in Claude Code, so there is nothing to switch
+here.
+
 ## No argument: summarize your previous reply
 
 Write the TL;DR of your previous reply yourself, in the chat, following the printed instructions exactly: the

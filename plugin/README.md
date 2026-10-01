@@ -41,7 +41,8 @@ is. The switch covers every session on this machine and needs no restart.
 ## What you need
 
 - **Claude Code.** The summary is added by a hook on the event Claude Code raises when it shows a reply. The chat
-  on claude.ai does not run hooks, so the plugin adds nothing there.
+  on claude.ai does not run hooks, so no summary is added by itself there; asking for a TL;DR of the last reply
+  still gets one, written under the plugin's own instructions.
 - **`python3`** on the machine (macOS and Linux have it), version 3.9 or newer. The script uses the standard
   library only; nothing is installed.
 - **The `claude` command**, which the Claude Code install gives you, signed in as usual.
@@ -159,8 +160,8 @@ that file: each summary, and each reason for none, is one line there. If a summa
 ## What has been tested
 
 The terminal, on macOS, with Claude Code 2.1.285, in an interactive session and in `-p` mode. The unit tests run
-on Ubuntu and macOS on every push to `master`. Not tested yet: Windows, the desktop app's Code tab and the IDE
-extensions.
+on Ubuntu and macOS on every push to `master`. Not tested yet: Windows, the desktop app's Code tab, the IDE
+extensions, Cowork, and the chat on claude.ai.
 
 ## Support
 

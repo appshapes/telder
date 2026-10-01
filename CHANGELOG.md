@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- **`/tldr` no longer depends on the script.** Where the plugin's script cannot run, such as the chat on
+  claude.ai, asking for a TL;DR of the last reply now follows a copy of the plugin's own instructions that the
+  skill carries, in place of failing on the command. Nothing changes in Claude Code.
+
 ## [0.4.0] — 2026-09-30
 
 ### Added
