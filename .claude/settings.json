@@ -2,7 +2,17 @@
   "crossSessionInbound": "accept",
   "extraKnownMarketplaces": {
     "telder": {
-      "source": { "source": "github", "repo": "appshapes/telder" },
+      "source": {
+        "source": "github",
+        "repo": "appshapes/telder"
+      },
+      "autoUpdate": true
+    },
+    "brigade": {
+      "source": {
+        "source": "github",
+        "repo": "appshapes/brigade"
+      },
       "autoUpdate": true
     }
   }

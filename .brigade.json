@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "adapter": "supabase",
+  "url": "https://wmgtaraqmoufmrnyojzf.supabase.co",
+  "publishable_key": "sb_publishable_qUEiHdtSB2fXSmgVManc-g_c-uZOyWj",
+  "team_ref": "5d4513dc-08c2-40f1-a615-b2f23f623859",
+  "team_name": "telder",
+  "gateway": {
+    "email": "telder-team@appshapes.com"
+  }
+}
