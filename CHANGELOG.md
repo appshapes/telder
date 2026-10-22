@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-10-22
+
 ### Changed
 
 - **The date after the heading reads month, day, year.** The heading now ends like `TL;DR 10-22-2026 14:05`
