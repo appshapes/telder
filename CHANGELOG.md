@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- **`/telder:update` asks for `/reload-plugins` whenever your session runs an older Telder than is installed.**
+  It said no reload was needed when the install was already current, which is also the case when Claude Code's
+  background update moved the install after your session started. The session then kept running the old
+  version. The skill now compares the version your session loaded with the one installed.
+
 ## [0.6.0] — 2026-10-22
 
 ### Added

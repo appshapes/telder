@@ -53,9 +53,15 @@ to confirm a command that a marketplace declares, stop and show the person what 
 
 ## 3. The reload
 
-The new version loads only when the user runs `/reload-plugins` or starts a new session; nothing you can run does
-that. End with one line: the version the install moved from and to, and that they type `/reload-plugins`. If
-every install was already current, say that instead.
+This session runs the Telder it loaded when it started, from `${CLAUDE_PLUGIN_ROOT}`. For an install from a
+marketplace, the last part of that path is the version this session runs. The installed version can be newer:
+a marketplace with auto-update on moves the install when it refreshes, during step 2 or before this skill ran,
+and the update then answers `already at the latest version` although this session runs an older one.
+
+A new version loads only when the user runs `/reload-plugins` or starts a new session; nothing you can run does
+that. End with one line: the version this session runs, the version now installed, and that they type
+`/reload-plugins`. Say that Telder is current and no reload is needed only when the two versions are the same;
+when the path does not end in a version (a session started with `--plugin-dir`), ask for the reload.
 
 ## If the command cannot be run
 

@@ -39,10 +39,37 @@ say "on its own schedule" and no more. The skill is the one-step update for righ
   `claude plugin update telder@telder --scope user`, with no permission denial, in 7.3 s and four turns, and
   answered that Telder was already at 0.5.0 and no reload was needed. The background update above had moved
   the install a minute earlier, so this run saw the already-current path; the release run below sees the other.
-- **After the release**: the same run is how this machine moves to 0.6.0; its result is on card 124.
+- **After the 0.6.0 release** (tag `v0.6.0`, release run 39754518207, CI run 39754515734 green on `fast` and
+  `macos`): the same run, at 09:19:34 UTC with the install at 0.5.0. `claude plugin marketplace update telder`
+  moved the install to 0.6.0 by itself (the marketplace has auto-update on), so `claude plugin update` answered
+  `already at the latest version (0.6.0)`. The run still asked for `/reload-plugins`, and the cache now holds
+  0.6.0 with both skills.
+
+## 0.6.1: the reload rule
+
+The two runs exposed a defect in 0.6.0's step 3, "if every install was already current, say that instead" of
+asking for the reload. An install can be current while the session runs an older version: the background update
+moves the install, not the session. That was Rjae's session that morning (0.4.2 loaded, 0.5.0 installed by 09:17),
+and the first run above said no reload was needed. In 0.6.1 the skill reads the loaded version from the last
+part of `${CLAUDE_PLUGIN_ROOT}` (`plugins/cache/<marketplace>/telder/<version>`, measured on this machine) and
+asks for the reload unless it equals the installed version, or when the path ends in no version
+(`--plugin-dir`).
 
 ## Not measured
 
 - An install from the directory being updated by `claude plugin update telder@anthropic-plugin-directory`: this
   machine has only the `telder@telder` install, and a second install would double the hook.
 - A project-scope or local-scope Telder install.
+
+Measured before the 0.6.1 release, with the working-tree skill copied under folders shaped like the cache
+(`.../cache/telder/telder/0.5.0` and `.../0.6.0`) and loaded with `--plugin-dir`, the install at 0.6.0, the same
+nested run as above:
+
+| Loaded from | Answer |
+| --- | --- |
+| a `0.5.0` folder | runs 0.5.0, installed 0.6.0, type `/reload-plugins` |
+| a `0.6.0` folder | runs 0.6.0, installed 0.6.0, current, no reload needed |
+| `plugin/` in the repository | no version at the end of the path, type `/reload-plugins` |
+
+Each run made the same three calls with no permission denial, which also shows that `${CLAUDE_PLUGIN_ROOT}` is
+replaced by the loaded path in the skill's text. The release's own ids are on card 124.
