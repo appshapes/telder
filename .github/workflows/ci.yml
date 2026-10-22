@@ -40,6 +40,7 @@ jobs:
       - run: make test
       - run: make lint
       - run: make plugin-check
+      - run: make docs-check            # the documentation gate, card 127: the tree's shape, links, the skills and options pages, the changelog section
       # `claude plugin validate` is login-free (Brigade's E0-8 (g) measured it), so the CLI is installed for this
       # one step and never authenticated.
       - uses: actions/setup-node@v4

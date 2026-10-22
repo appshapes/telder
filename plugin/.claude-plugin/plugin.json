@@ -9,7 +9,7 @@
   },
   "homepage": "https://github.com/appshapes/telder",
   "repository": "https://github.com/appshapes/telder",
-  "documentationUrl": "https://github.com/appshapes/telder#readme",
+  "documentationUrl": "https://github.com/appshapes/telder/blob/master/docs/user/README.md",
   "supportUrl": "https://github.com/appshapes/telder/issues",
   "privacyPolicyUrl": "https://github.com/appshapes/telder/blob/master/plugin/README.md#what-leaves-your-machine-and-where-it-goes",
   "license": "MIT",

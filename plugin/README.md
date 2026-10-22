@@ -182,6 +182,7 @@ extensions, Cowork, and the chat on claude.ai.
   [github.com/appshapes/telder/security](https://github.com/appshapes/telder/security/advisories/new)
 - What changed in each release:
   [CHANGELOG.md](https://github.com/appshapes/telder/blob/master/CHANGELOG.md)
-- The source, the tests and how to work on Telder: [github.com/appshapes/telder](https://github.com/appshapes/telder)
+- The documentation, for using Telder and for working on it:
+  [github.com/appshapes/telder](https://github.com/appshapes/telder#readme)
 
 MIT license.

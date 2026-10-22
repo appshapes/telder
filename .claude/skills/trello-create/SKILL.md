@@ -10,7 +10,9 @@ The arguments are: $ARGUMENTS
 ## Defaults and conventions
 
 - Board defaults to `AppShapes` (id `65be2d49d367b88f7e35ab55`, in the AppShapes workspace) and list
-  defaults to `Wanting` (the intake list). Other lists on that board: Doing, Deploying, Releasing, Supporting.
+  defaults to `Wanting` (the intake list). The board's other open lists are project lists (Brigade, Cavalry,
+  Website, Canary) and Hibernating; a Telder card goes in Wanting. Every card carries exactly one project
+  label, `--label Telder` for this repository's work.
 - Titles are plain, without a ticket number. Trello assigns the card number (`idShort`), which
   is what commits reference (`20: ...`) and what appears in the card URL (`/20-slug`). A piece of
   work with a card of its own uses that card's number.

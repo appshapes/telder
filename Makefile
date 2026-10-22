@@ -40,7 +40,7 @@ setup: ## Check the tools the gates need (python3, shellcheck, claude, gh) and s
 # ========== Gates ==========
 
 .PHONY: test
-test: ## Compile the hook script and run the unit tests (what `make commit` runs) (CI)
+test: ## Compile the hook script and run the unit tests, the documentation gate among them (what `make commit` runs) (CI)
 	$(python) -c 'import sys; compile(open(sys.argv[1]).read(), sys.argv[1], "exec")' $(hook_script)
 	PYTHONDONTWRITEBYTECODE=1 $(python) -m unittest discover -s tests -t . -v
 
@@ -57,6 +57,14 @@ plugin-check: ## Static checks of plugin/: file allowlist, exec-form hooks, scri
 plugin-validate: ## claude plugin validate on the marketplace and the plugin root (CI)
 	claude plugin validate .
 	claude plugin validate ./plugin --strict
+
+.PHONY: docs-check
+docs-check: ## The documentation gate (card 127): README and persona shapes, links and anchors, orphans, the skills page, the options pages, the generated make-target page, the changelog section (CI)
+	$(python) scripts/ci/docscheck.py check
+
+.PHONY: docs-generate
+docs-generate: ## Regenerate docs/developer/reference/make-targets.md from this Makefile's help lines (docs-check fails when it is stale)
+	$(python) scripts/ci/docscheck.py generate
 
 .PHONY: hook-smoke
 hook-smoke: ## Run the hook script on the sample input in tests/fixtures and print its reply (needs a logged-in claude)

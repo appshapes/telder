@@ -6,39 +6,6 @@ A TL;DR under every long Claude Code reply. When a reply runs past a few paragra
 short list under it: the most important points first, in simple language, for a reader with no time. A model
 writes it through your own `claude` login, Opus by default. Nothing to configure, no API key.
 
-## If you want to
-
-| If you want to | Go to |
-| --- | --- |
-| install the plugin | [Install](#install) |
-| see what a TL;DR looks like | [What you see](#what-you-see) |
-| get a TL;DR of the last reply right now, or pause the summaries | [`/tldr`](#tldr) |
-| change what the summary focuses on, its language, its voice | [Change the instructions](#change-the-instructions) |
-| change how long a reply must be, how many points, which model | [Options](#options) |
-| update the plugin | [Update](#update) |
-| know what the plugin sees, and where it goes | [`plugin/README.md` › What leaves your machine](plugin/README.md#what-leaves-your-machine-and-where-it-goes) |
-| see what changed in a release | [`CHANGELOG.md`](CHANGELOG.md) |
-| work on Telder | [`docs/development.md`](docs/development.md) |
-
-## Install
-
-1. Open Claude Code.
-2. Type `/plugin marketplace add appshapes/telder`.
-3. Type `/plugin install telder@telder`. When it asks where to install, choose **user**.
-4. Type `/reload-plugins`.
-
-You need `python3` on your machine (macOS and Linux have it) and the `claude` command on your `PATH`, which the
-Claude Code install gives you.
-
-**Installed before 0.4.0?** The plugin was named `tldr` then, and that name gets no more updates. In a terminal:
-`claude plugin uninstall tldr@telder`, `claude plugin marketplace update telder`,
-`claude plugin install telder@telder`; then `/reload-plugins` in your session. Options you had set need setting
-again under the new name.
-
-## What you see
-
-A reply shorter than about 300 words of prose is shown as it is. A longer one ends like this:
-
 ```
   ... Dust, smoke and water droplets can make those colors even stronger.
   ---
@@ -48,76 +15,11 @@ A reply shorter than about 300 words of prose is shown as it is. A longer one en
   - At sunrise and sunset light crosses much more air, which scatters the blue away and leaves red.
 ```
 
-The date and time after the heading are your machine's local time when the reply ended. The summary is added to
-what your screen shows, and nowhere else: the conversation Claude sees is unchanged, and so is the transcript.
-The reply pauses for a few seconds at its end while the summary is written; if the model does not answer in
-time, the reply is shown without one.
+## Who are you?
 
-## `/tldr`
-
-- `/tldr` — Claude writes a TL;DR of its previous reply, in the chat, following the same instructions as the
-  automatic ones.
-- `/tldr instructions` — shows the instructions the summaries follow, and where each part comes from.
-- `/tldr off` — no more automatic summaries on this machine, in every session, until `/tldr on`.
-- `/tldr on` — start them again.
-- `/tldr status` — which it is.
-
-## Options
-
-Ask your session, for example:
-
-```
-Set the telder plugin's min_words to 200 and max_points to 3.
-```
-
-It edits your user settings; start a new session for the change to take effect. Or type `/plugin`, open `telder`,
-and set them there.
-
-| Option | Default | Meaning |
-| --- | --- | --- |
-| `min_words` | `300` | a reply with fewer words of prose gets no summary; code and tables do not count; `0` summarizes every reply |
-| `max_points` | `10` | at most this many points, the most important first |
-| `model` | `claude-opus-5-5` | the model that writes the summary, by its full name: `claude-sonnet-5-5` is a little faster and cheaper, `claude-fable-5-1` a little slower, `claude-haiku-4-5-20251001` the cheapest but slow and uneven when measured |
-| `heading` | `TL;DR` | the words above the points; the local date and time follow them |
-| `timeout` | `90` | seconds to wait for the summary before showing the reply without one |
-| `instructions` | *(empty)* | a sentence or a few of your own, added to the plugin's instructions |
-| `instructions_file` | *(empty)* | absolute path to a text file of your own instructions, at most 8 KB, added after `instructions` |
-| `instructions_mode` | `add` | `add` keeps the plugin's own instructions before yours; `replace` drops them |
-
-## Change the instructions
-
-The summary follows instructions in layers, in this order:
-
-1. The plugin's own: salient points, simple and concise language, few or no abbreviations, no mannered prose,
-   highest priority first, short. `instructions_mode: replace` drops this layer.
-2. Your `instructions` option: a sentence or a few, for example:
-
-   ```
-   Set the telder plugin's instructions to: Write it in French. Say first what I must do next.
-   ```
-
-3. Your `instructions_file` option: a text file, for longer instructions. It is read at every summary, so an
-   edit takes effect at once.
-4. The project's `.telder.md`, at the root of the folder you opened Claude Code in, for instructions a team
-   shares: for example `Name the files that changed.` It is always added.
-5. The format rules, which cannot be changed: a list of at most `max_points` points, one short sentence each.
-
-`/tldr instructions` prints the layers in effect. A file that is missing, empty, not text or over 8 KB is
-   ignored, with one line in Claude Code's debug log.
-
-## Update
-
-Nothing to do, most of the time. Claude Code updates the plugin in the background when it refreshes the
-marketplace, and tells you to type `/reload-plugins`; do that. The refresh runs on Claude Code's own schedule,
-so to update right now, type `/telder:update`, then `/reload-plugins`. It refreshes the marketplace you
-installed from and moves your install to its current release, and does nothing else. An install from
-Anthropic's directory moves to the version the directory serves, which can trail this repository while a new
-version is reviewed.
-
-## More
-
-- [plugin/README.md](plugin/README.md) — the plugin's own page, which the directory shows as its listing: what leaves
-  your machine, how the summary is made, what to check when no summary appears
-- [docs/development.md](docs/development.md) — working on Telder: setup, gates, the dev loop, releases, layout
-- [docs/claude-code-usage.md](docs/claude-code-usage.md) — working on Telder with Claude Code: skills, the Trello CLI
-- [CHANGELOG.md](CHANGELOG.md) — what changed in each release
+- **[User](docs/user/README.md)** — you use Claude Code and want the long replies summarized: install the plugin,
+  read what it adds, tune what it focuses on, update it, know what leaves your machine.
+- **[Developer](docs/developer/README.md)** — you work on Telder itself: set up a clone, pass the gates, change
+  the script or the listing, cut a release, write the documentation.
+- **[AI Agent](docs/agent/README.md)** — you are the model: in a session, the plugin's skills are your
+  documentation; on this repository, `CLAUDE.md` and `AGENTS.md` are.

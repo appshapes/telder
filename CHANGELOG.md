@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- **The documentation is one tree per reader** (card 127). `README.md` names three personas — User, Developer,
+  AI Agent — and each has a root page under `docs/` with an "If you want to" table, topic pages with a TL;DR per
+  action, and a detail page per action. The front page's own sections, `docs/development.md` and
+  `docs/claude-code-usage.md` are dissolved into it; the plugin's listing, `SECURITY.md` and this changelog are
+  reached from it unchanged. The plugin itself is unchanged: its listing points at the tree in one more line,
+  and the manifest's documentation link names the User pages.
+
 ## [0.7.0] — 2026-10-22
 
 ### Changed

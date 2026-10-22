@@ -5,7 +5,8 @@
 # The release sequence, ported from appshapes/brigade and cut down: no binaries, no checksums, so the tag is the
 # release and release.yml publishes it with the changelog section as its notes.
 #
-#   preconditions   a MAJOR.MINOR.PATCH version, a card number, the repository root, a clean tree, master
+#   preconditions   a MAJOR.MINOR.PATCH version, a card number, the repository root, a clean tree, master, a
+#                   non-empty Unreleased section, the documentation gate green (make docs-check)
 #   1  bump the pin        plugin/.claude-plugin/plugin.json "version"
 #   2  the changelog       CHANGELOG.md: rename `## [Unreleased]` to `## [<v>] — <today>` under a fresh
 #                          `## [Unreleased]`; refuse an empty Unreleased section (a release says what changed)
@@ -60,6 +61,10 @@ grep -q '^## \[Unreleased\]' "$changelog" || die "$changelog has no '## [Unrelea
 # The Unreleased section is everything between its heading and the next '## [' heading; it must hold a line.
 unreleased=$(awk '/^## \[Unreleased\]/ {on=1; next} /^## \[/ {on=0} on' "$changelog" | grep -c '[^[:space:]]' || true)
 [ "$unreleased" -gt 0 ] || die "$changelog's Unreleased section is empty: a release says what changed"
+
+# The documentation gate (card 127): a release ships with its pages. Step 3's `make push` runs it again, through
+# `make test`, against the bumped pin and the renamed changelog section.
+make docs-check >/dev/null || die "the documentation gate failed: run 'make docs-check' and fix what it names before releasing"
 
 if [ "$dry_run" = 1 ]; then
   say "DRY_RUN=1: skipping 'git pull --no-edit'"

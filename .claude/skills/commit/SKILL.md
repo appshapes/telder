@@ -6,8 +6,8 @@ argument-hint: "[card]"
 
 Commit the current working tree changes using this project's `make push` target.
 
-`make push` = `make commit` + `git push`. `make commit` alone pulls, tests, checks the plugin tree, stages and
-commits, but does NOT push — so this skill uses `make push`.
+`make push` = `make commit` + `git push`. `make commit` alone pulls, tests (the documentation gate among the
+tests), checks the plugin tree, stages and commits, but does NOT push — so this skill uses `make push`.
 
 The card number is: $ARGUMENTS
 

@@ -30,12 +30,13 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
         env: {GH_TOKEN: "${{ github.token }}"}
-      - name: Guard that the plugin manifest pins this tag and the changelog has its section
+      - name: Guard that the plugin manifest pins this tag, the changelog has its section and the documentation gate passes
         if: steps.published.outputs.exists != 'true'
         run: |
           test "v$(sed -nE 's/^[[:space:]]*"version":[[:space:]]*"([^"]+)".*/\1/p' plugin/.claude-plugin/plugin.json | head -n 1)" = "${GITHUB_REF_NAME}"
           scripts/ci/release-notes.sh "${GITHUB_REF_NAME}" > "${RUNNER_TEMP}/notes.md"
           cat "${RUNNER_TEMP}/notes.md"
+          make docs-check               # the documentation gate (card 127): a release ships with its pages and its changelog section
       - name: Publish
         if: steps.published.outputs.exists != 'true'
         run: |
