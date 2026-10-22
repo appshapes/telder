@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- **The date and time after the heading.** The heading over every summary now ends with your machine's local
+  date and time when the reply ended, in short form: `TL;DR 2026-10-22 14:05`. Scrolling back through a long
+  session, you see when each reply landed. The `heading` option still sets the words. `/tldr` shows the same
+  line, through a new `heading` command of the script. Nothing new leaves your machine.
+
 ## [0.4.2] — 2026-10-01
 
 ### Changed

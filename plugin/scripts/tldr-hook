@@ -21,6 +21,7 @@ Also a small command line for the /tldr skill:
   tldr-hook off | on | status [--data-dir DIR]
   tldr-hook instructions [--instructions-file PATH] [--instructions-stdin] [--mode add|replace]
                          [--max-points N] [--project-dir DIR]
+  tldr-hook heading [--heading TEXT]
 """
 import json
 import os
@@ -44,6 +45,7 @@ MIN_TIMEOUT, MAX_TIMEOUT = 10, 120
 MAX_INSTRUCTIONS_BYTES = 8192
 PROJECT_FILE = ".telder.md"
 NONE_MARK = "NONE"
+STAMP_FORMAT = "%Y-%m-%d %H:%M"  # the local date and time after the heading, short
 
 BUILT_IN = (
     "You write the TL;DR of a reply an assistant just gave to a person. The person likely does not have much "
@@ -335,6 +337,16 @@ def sweep_stale(environ, max_age=3600):
 
 # ---- the two events ----------------------------------------------------------------------------------------------
 
+def local_stamp(now=None):
+    """The local date and time, short: `2026-10-22 14:05`. `now` is a struct_time; None reads the clock, local time."""
+    return time.strftime(STAMP_FORMAT, time.localtime() if now is None else now)
+
+
+def heading_line(heading, stamp):
+    """The line over the points: the heading option, then the date and time the reply ended."""
+    return f"{heading} {stamp}"
+
+
 def format_summary(heading, summary):
     return f"{heading}\n{summary}"
 
@@ -345,10 +357,11 @@ def handle_stop(data, opts, environ):
     text = data.get("last_assistant_message") or ""
     if prose_words(text) < opts["min_words"]:
         return None
+    stamp = local_stamp()  # when the reply ended, not when the summary did
     summary = summarize(text, opts, environ, project_dir_of(environ, data))
     if summary is None:
         return None
-    return {"systemMessage": format_summary(opts["heading"], summary)}
+    return {"systemMessage": format_summary(heading_line(opts["heading"], stamp), summary)}
 
 
 def handle_message_display(data, opts, environ):
@@ -370,10 +383,11 @@ def handle_message_display(data, opts, environ):
     sweep_stale(environ)
     if prose_words(text) < opts["min_words"]:
         return None
+    stamp = local_stamp()  # when the reply ended, not when the summary did
     summary = summarize(text, opts, environ, project_dir_of(environ, data))
     if summary is None:
         return None
-    shown = delta + ("\n\n" if delta else "") + "---\n**" + opts["heading"] + "**\n" + summary
+    shown = delta + ("\n\n" if delta else "") + "---\n**" + opts["heading"] + "** " + stamp + "\n" + summary
     return {"hookSpecificOutput": {"hookEventName": "MessageDisplay", "displayContent": shown}}
 
 
@@ -407,6 +421,7 @@ def run_hook(stdin, stdout, environ):
 USAGE = ("usage: tldr-hook off | on | status [--data-dir DIR]\n"
          "       tldr-hook instructions [--instructions-file PATH] [--instructions-stdin] [--mode add|replace]"
          " [--max-points N] [--project-dir DIR]\n"
+         "       tldr-hook heading [--heading TEXT]\n"
          "       (no argument: run as a hook on stdin)")
 
 
@@ -428,6 +443,8 @@ def run_command(argv, stdin, stdout, environ):
         data_dir_arg = take_value(args, "--data-dir")
         if args and args[0] == "instructions":
             return run_instructions(args[1:], stdin, stdout, environ)
+        if args and args[0] == "heading":
+            return run_heading(args[1:], stdout)
     except ValueError as error:
         warn(str(error))
         warn(USAGE)
@@ -476,6 +493,18 @@ def run_instructions(args, stdin, stdout, environ):
     given["CLAUDE_PLUGIN_OPTION_INSTRUCTIONS"] = inline
     opts = options(given)
     stdout.write(instructions_report(instruction_parts(opts, (project_arg or "").strip() or None)))
+    return 0
+
+
+def run_heading(args, stdout):
+    """Print the line the /tldr skill puts over its list: the heading option, given as an argument for the same
+    reason as above, then the local date and time now."""
+    args = list(args)
+    heading_arg = take_value(args, "--heading")
+    if args:
+        raise ValueError(f"unknown argument: {args[0]}")
+    given = {"CLAUDE_PLUGIN_OPTION_HEADING": heading_arg} if heading_arg is not None else {}
+    stdout.write(heading_line(options(given)["heading"], local_stamp()) + "\n")
     return 0
 
 

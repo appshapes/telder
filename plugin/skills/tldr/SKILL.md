@@ -45,14 +45,21 @@ one short sentence. No heading, no preamble, no closing line, no code. If the re
 fewer short points, or is only a question to the person, answer with the single word NONE.
 ```
 
-If the heading named below still reads as a placeholder in braces, the heading is `TL;DR`. For `off`, `on` and
-`status`, say in one line that the automatic summaries exist only in Claude Code, so there is nothing to switch
-here.
+The heading is then `${user_config.heading}` alone, without the date and time the command below would add; if
+that still reads as a placeholder in braces, it is `TL;DR`. For `off`, `on` and `status`, say in one line that
+the automatic summaries exist only in Claude Code, so there is nothing to switch here.
 
 ## No argument: summarize your previous reply
 
+Run also exactly this command. Its one line of output is the heading: the heading option, then the local date
+and time.
+
+```
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/tldr-hook" heading --heading "${user_config.heading}"
+```
+
 Write the TL;DR of your previous reply yourself, in the chat, following the printed instructions exactly: the
-layers in order, and the format rules last. Put the heading `${user_config.heading}` above the list. Write
+layers in order, and the format rules last. Put the heading line the command printed above the list. Write
 nothing else. If your previous reply was already a short list or a single question, say so in one line instead.
 
 ## `instructions`: show them

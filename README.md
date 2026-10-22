@@ -42,15 +42,16 @@ A reply shorter than about 300 words of prose is shown as it is. A longer one en
 ```
   ... Dust, smoke and water droplets can make those colors even stronger.
   ---
-  TL;DR
+  TL;DR 2026-10-22 14:05
   - Blue light scatters far more than red as sunlight crosses the air, so the sky looks blue.
   - The sun gives off less violet and our eyes see blue better, so the sky is not violet.
   - At sunrise and sunset light crosses much more air, which scatters the blue away and leaves red.
 ```
 
-The summary is added to what your screen shows, and nowhere else: the conversation Claude sees is unchanged, and
-so is the transcript. The reply pauses for a few seconds at its end while the summary is written; if the model
-does not answer in time, the reply is shown without one.
+The date and time after the heading are your machine's local time when the reply ended. The summary is added to
+what your screen shows, and nowhere else: the conversation Claude sees is unchanged, and so is the transcript.
+The reply pauses for a few seconds at its end while the summary is written; if the model does not answer in
+time, the reply is shown without one.
 
 ## `/tldr`
 
@@ -77,7 +78,7 @@ and set them there.
 | `min_words` | `300` | a reply with fewer words of prose gets no summary; code and tables do not count; `0` summarizes every reply |
 | `max_points` | `10` | at most this many points, the most important first |
 | `model` | `claude-opus-5-5` | the model that writes the summary, by its full name: `claude-sonnet-5-5` is a little faster and cheaper, `claude-fable-5-1` a little slower, `claude-haiku-4-5-20251001` the cheapest but slow and uneven when measured |
-| `heading` | `TL;DR` | the line above the points |
+| `heading` | `TL;DR` | the words above the points; the local date and time follow them |
 | `timeout` | `90` | seconds to wait for the summary before showing the reply without one |
 | `instructions` | *(empty)* | a sentence or a few of your own, added to the plugin's instructions |
 | `instructions_file` | *(empty)* | absolute path to a text file of your own instructions, at most 8 KB, added after `instructions` |

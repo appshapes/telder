@@ -14,21 +14,22 @@ A reply shorter than about 300 words of prose is shown as it is. A longer one en
 ```
   ... Dust, smoke and water droplets can make those colors even stronger.
   ---
-  TL;DR
+  TL;DR 2026-10-22 14:05
   - Blue light scatters far more than red as sunlight crosses the air, so the sky looks blue.
   - The sun gives off less violet and our eyes see blue better, so the sky is not violet.
   - At sunrise and sunset light crosses much more air, which scatters the blue away and leaves red.
 ```
 
-The summary is added to what your screen shows, and nowhere else. The conversation Claude sees is unchanged, and
-so is the transcript, so a summary can never be read by Claude as an instruction and never uses up context. The
-reply pauses for a few seconds at its end while the summary is written; if the model does not answer in time,
-the reply is shown without one.
+The date and time after the heading are your machine's local time when the reply ended. The summary is added to
+what your screen shows, and nowhere else. The conversation Claude sees is unchanged, and so is the transcript, so
+a summary can never be read by Claude as an instruction and never uses up context. The reply pauses for a few
+seconds at its end while the summary is written; if the model does not answer in time, the reply is shown
+without one.
 
 ## Three things to try
 
 1. **Ask something with a long answer**, for example `Explain how DNS resolution works, step by step.` The reply
-   ends with a rule, the heading `TL;DR` and a list of its main points.
+   ends with a rule, the heading `TL;DR` with the local date and time, and a list of its main points.
 2. **Type `/tldr`** after any reply. Claude writes a TL;DR of its previous reply in the chat, under the same
    instructions as the automatic ones. This also works on a reply too short to get one by itself.
 3. **Make the summaries your own.** Ask `Set the telder plugin's instructions to: Write it in French. Say first
@@ -60,7 +61,7 @@ or type `/plugin`, open `telder`, and set them there. A new session picks up the
 | `min_words` | `300` | a reply with fewer words of prose gets no summary; code blocks and table rows do not count; `0` summarizes every reply |
 | `max_points` | `10` | the summary has at most this many points, the most important first |
 | `model` | `claude-opus-5-5` | the model that writes the summary, by its full name; `claude-sonnet-5-5` is a little faster and cheaper |
-| `heading` | `TL;DR` | the line above the points |
+| `heading` | `TL;DR` | the words above the points; the local date and time follow them |
 | `timeout` | `90` | seconds to wait for the summary, 10 to 120; past it the reply is shown without one |
 | `instructions` | *(empty)* | a sentence or a few of your own, added to the plugin's instructions |
 | `instructions_file` | *(empty)* | absolute path to a text file of your own instructions, at most 8 KB |
@@ -102,8 +103,9 @@ This section is the plugin's privacy statement.
 - **Never sent:** your prompts, your files, the transcript, the session's identifiers, your working directory.
 - **Read on this machine:** what Claude Code hands the hook (the reply text as it is shown, and the session and
   message identifiers that keep the pieces of one reply together); the plugin's options; the file your
-  `instructions_file` option names; and `.telder.md` at the project root. The script never opens the transcript
-  file, Claude Code's configuration, its memory or its chat history, and it never reads a credential.
+  `instructions_file` option names; `.telder.md` at the project root; and the clock, for the date and time
+  after the heading. The script never opens the transcript file, Claude Code's configuration, its memory or its
+  chat history, and it never reads a credential.
 - **Written on this machine:** two things, both in the plugin's data directory and nowhere under your project.
   The pieces of the reply being shown are kept in a file that only your user can read, until the reply is
   complete. A marker file named `mute`, holding the time you typed `/tldr off`, exists until `/tldr on`. For

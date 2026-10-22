@@ -1,4 +1,5 @@
 """Unit tests for plugin/scripts/tldr-hook. `make test` runs them; no network, no claude: the nested call is a fake."""
+import contextlib
 import importlib.machinery
 import importlib.util
 import io
@@ -7,6 +8,7 @@ import os
 import subprocess
 import tempfile
 import sys
+import time
 import unittest
 from unittest import mock
 
@@ -29,6 +31,8 @@ hook = load_script()
 
 LONG = " ".join(f"word{i}" for i in range(400))
 SHORT = "Done. Two files changed."
+STAMP = "2026-10-22 14:05"
+NOW = time.struct_time((2026, 10, 22, 14, 5, 9, 3, 295, -1))  # the moment STAMP shows, as a struct_time
 
 
 def fake_run(stdout, returncode=0, stderr=""):
@@ -40,6 +44,15 @@ def fake_run(stdout, returncode=0, stderr=""):
 
     run.calls = calls
     return run
+
+
+def faked(run):
+    """The nested call replaced by `run`, warnings silenced, and the clock fixed at STAMP."""
+    stack = contextlib.ExitStack()
+    stack.enter_context(mock.patch.object(hook.subprocess, "run", run))
+    stack.enter_context(mock.patch.object(hook, "warn"))
+    stack.enter_context(mock.patch.object(hook, "local_stamp", return_value=STAMP))
+    return stack
 
 
 class ProseWords(unittest.TestCase):
@@ -192,7 +205,7 @@ class Summarize(unittest.TestCase):
 class StopEvent(unittest.TestCase):
     def run_hook(self, data, env, run):
         out = io.StringIO()
-        with mock.patch.object(hook.subprocess, "run", run), mock.patch.object(hook, "warn"):
+        with faked(run):
             code = hook.main([], io.StringIO(json.dumps(data)), out, env)
         return code, out.getvalue()
 
@@ -204,7 +217,7 @@ class StopEvent(unittest.TestCase):
             data = {"hook_event_name": "Stop", "stop_reason": "end_turn", "last_assistant_message": LONG}
             code, out = self.run_hook(data, self.env(folder), fake_run("- first\n- second\n"))
         self.assertEqual(code, 0)
-        self.assertEqual(json.loads(out), {"systemMessage": "TL;DR\n- first\n- second"})
+        self.assertEqual(json.loads(out), {"systemMessage": f"TL;DR {STAMP}\n- first\n- second"})
 
     def test_short_reply_and_error_stops_get_nothing(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -227,7 +240,7 @@ class StopEvent(unittest.TestCase):
             self.assertEqual(self.run_hook(dict(data, hook_event_name="PreToolUse"), env, run), (0, ""))
             self.assertEqual(run.calls, [])
             code, out = self.run_hook(data, env, run)
-            self.assertEqual(json.loads(out)["systemMessage"], "TL;DR\n- x")
+            self.assertEqual(json.loads(out)["systemMessage"], f"TL;DR {STAMP}\n- x")
 
     def test_bad_input_is_not_an_error(self):
         out = io.StringIO()
@@ -240,7 +253,7 @@ class StopEvent(unittest.TestCase):
 class MessageDisplayEvent(unittest.TestCase):
     def run_hook(self, data, env, run):
         out = io.StringIO()
-        with mock.patch.object(hook.subprocess, "run", run), mock.patch.object(hook, "warn"):
+        with faked(run):
             code = hook.main([], io.StringIO(json.dumps(data)), out, env)
         self.assertEqual(code, 0)
         return out.getvalue()
@@ -257,7 +270,7 @@ class MessageDisplayEvent(unittest.TestCase):
             out = self.run_hook(dict(base, delta="", final=True), env, run)
             reply = json.loads(out)
             self.assertEqual(reply["hookSpecificOutput"]["hookEventName"], "MessageDisplay")
-            self.assertEqual(reply["hookSpecificOutput"]["displayContent"], "---\n**TL;DR**\n- point one\n- point two")
+            self.assertEqual(reply["hookSpecificOutput"]["displayContent"], f"---\n**TL;DR** {STAMP}\n- point one\n- point two")
             self.assertEqual(run.calls[0][1]["input"].split(), LONG.split())
             self.assertEqual(os.listdir(os.path.join(folder, "chunks")), [])
 
@@ -279,7 +292,7 @@ class MessageDisplayEvent(unittest.TestCase):
             data = {"hook_event_name": "MessageDisplay", "session_id": "s", "message_id": "m", "delta": LONG, "final": True}
             out = self.run_hook(data, env, fake_run("- only\n"))
             shown = json.loads(out)["hookSpecificOutput"]["displayContent"]
-            self.assertTrue(shown.startswith(LONG + "\n\n---\n**TL;DR**\n- only"))
+            self.assertTrue(shown.startswith(LONG + f"\n\n---\n**TL;DR** {STAMP}\n- only"))
 
     def test_short_message_shows_nothing_and_leaves_no_file(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -302,6 +315,51 @@ class MessageDisplayEvent(unittest.TestCase):
             data = {"hook_event_name": "MessageDisplay", "session_id": "s", "message_id": "m", "delta": SHORT, "final": True}
             self.run_hook(data, env, fake_run("- x"))
             self.assertFalse(os.path.exists(stale))
+
+
+class HeadingTime(unittest.TestCase):
+    def test_the_stamp_is_the_short_local_date_and_time(self):
+        self.assertEqual(hook.local_stamp(NOW), STAMP)
+        with mock.patch.object(hook.time, "localtime", return_value=NOW) as localtime:
+            self.assertEqual(hook.local_stamp(), STAMP)
+        localtime.assert_called_once_with()
+
+    def test_the_heading_line_is_the_option_then_the_stamp(self):
+        self.assertEqual(hook.heading_line("Summary", STAMP), f"Summary {STAMP}")
+
+    def test_the_time_is_taken_when_the_reply_ends_not_when_the_summary_does(self):
+        order = []
+
+        def run(cmd, **kwargs):
+            order.append("summary")
+            return subprocess.CompletedProcess(cmd, 0, stdout="- x\n", stderr="")
+
+        def stamp():
+            order.append("stamp")
+            return STAMP
+
+        for data in ({"hook_event_name": "MessageDisplay", "session_id": "s", "message_id": "m", "delta": LONG, "final": True},
+                     {"hook_event_name": "Stop", "stop_reason": "end_turn", "last_assistant_message": LONG}):
+            order.clear()
+            with tempfile.TemporaryDirectory() as folder, mock.patch.object(hook.subprocess, "run", run), \
+                    mock.patch.object(hook, "warn"), mock.patch.object(hook, "local_stamp", stamp):
+                out = io.StringIO()
+                hook.main([], io.StringIO(json.dumps(data)), out, {"CLAUDE_PLUGIN_DATA": folder})
+            self.assertEqual(order, ["stamp", "summary"], data["hook_event_name"])
+            reply = json.loads(out.getvalue())
+            shown = reply.get("systemMessage") or reply["hookSpecificOutput"]["displayContent"]
+            self.assertIn(f"TL;DR** {STAMP}\n" if data["hook_event_name"] == "MessageDisplay" else f"TL;DR {STAMP}\n", shown)
+
+    def test_heading_command_prints_the_line_for_the_skill(self):
+        out = io.StringIO()
+        with mock.patch.object(hook, "local_stamp", return_value=STAMP):
+            self.assertEqual(hook.main(["heading", "--heading", "Summary"], None, out, {}), 0)
+            self.assertEqual(hook.main(["heading"], None, out, {}), 0)
+            self.assertEqual(hook.main(["heading", "--heading", "  "], None, out, {}), 0)
+        self.assertEqual(out.getvalue(), f"Summary {STAMP}\nTL;DR {STAMP}\nTL;DR {STAMP}\n")
+        with mock.patch.object(hook, "warn"):
+            self.assertEqual(hook.main(["heading", "--heading"], None, io.StringIO(), {}), 2)
+            self.assertEqual(hook.main(["heading", "--sideways"], None, io.StringIO(), {}), 2)
 
 
 class CommandLine(unittest.TestCase):
@@ -437,7 +495,7 @@ class Instructions(unittest.TestCase):
                                   ({"CLAUDE_PLUGIN_DATA": folder}, "from b")):
                 run = fake_run("- x\n")
                 out = io.StringIO()
-                with mock.patch.object(hook.subprocess, "run", run), mock.patch.object(hook, "warn"):
+                with faked(run):
                     hook.main([], io.StringIO(json.dumps(data)), out, env)
                 system = run.calls[0][0][run.calls[0][0].index("--system-prompt") + 1]
                 self.assertIn(expected, system)

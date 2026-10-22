@@ -44,7 +44,7 @@
     "heading": {
       "type": "string",
       "title": "Heading over the summary",
-      "description": "The line shown above the points.",
+      "description": "The words shown above the points. The local date and time the reply ended follow them.",
       "default": "TL;DR"
     },
     "timeout": {
