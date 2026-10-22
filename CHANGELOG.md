@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-10-22
+
 ### Added
 
 - **`/telder:update` updates the plugin right now.** Claude Code updates Telder in the background when it
