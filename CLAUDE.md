@@ -11,11 +11,11 @@
 - Start here: `.context/plans/handoff-2026-09-30.md` (state) and `.context/plans/telder-build-2026-09-30.md`
   (every measurement and decision).
 - Telder is the product and `telder` the plugin (`/plugin install telder@telder`; it was `tldr` until 0.3.0, renamed
-  for the directory, where a name is permanent and `tldr` drew three look-alike holds); `/tldr` is its skill, and the
-  script, its log prefix and `TLDR_INNER` keep the old spelling. The plugin is one command hook on
+  for the directory, where a name is permanent and `tldr` drew three look-alike holds); `/tldr` and
+  `/telder:update` are its skills, and the script, its log prefix and `TLDR_INNER` keep the old spelling. The plugin is one command hook on
   `MessageDisplay` (display-only: the summary never enters Claude's context; measured 2026-09-30, see
   `.context/plans/telder-build-2026-09-30.md` for why not `Stop` and never a `prompt` hook), one Python script and its
-  skill under `plugin/`, the listing icon, and nothing else: no MCP server, no channel, no binary, no
+  two skills under `plugin/`, the listing icon, and nothing else: no MCP server, no channel, no binary, no
   `bin/` directory (a plugin with `bin/` is not installable from claude.ai or Cowork). `make plugin-check` enforces
   the `plugin/` file allowlist.
 - Anthropic's plugin directory takes the plugin from `plugin/` on `master` and scans every new commit there

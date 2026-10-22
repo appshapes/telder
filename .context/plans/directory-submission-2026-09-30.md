@@ -10,6 +10,13 @@ said here.
 
 ## State
 
+**Approved and published on 2026-10-01** (corrected 2026-10-22: this page stopped at "Scanning" because
+nothing was pushed while the version was under review). A reviewer approved 0.4.2 at `783e8e0`, and the portal
+showed Published, version Serving. Auto-publish is on: a push to `master` that passes the scan goes live, and
+one that draws a hold waits for a reviewer. At 09:16 UTC on 2026-10-22, about an hour after the 0.5.0 push,
+the directory's catalog (`claude plugin marketplace update anthropic-plugin-directory`) still served 0.4.2,
+at reviewed commit `573d266`.
+
 **Submitted for review on 2026-10-01**, by this session on Rjae's instruction ("complete the submission
 yourself"; asked how the four Compliance acknowledgements should be ticked, she answered "You tick them for me").
 
@@ -133,7 +140,7 @@ minutes; three minutes later it accepted one again.
 
 ## Not done
 
-- **Publish**, once the version passes: Rjae's, on the plugin's page.
+- **Publish**: done on 2026-10-01 (see State).
 - **Not tested**: the plugin installed from claude.ai in chat and in Cowork (it would mean uploading it to Rjae's
   account). In Cowork hooks load; whether `MessageDisplay` fires there, and whether a `claude` is on its `PATH`,
   is unknown. If it is not, the reply is shown without a summary.

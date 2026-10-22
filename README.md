@@ -107,7 +107,12 @@ The summary follows instructions in layers, in this order:
 
 ## Update
 
-Nothing to do. Claude Code updates the plugin in the background and tells you to type `/reload-plugins`; do that.
+Nothing to do, most of the time. Claude Code updates the plugin in the background when it refreshes the
+marketplace, and tells you to type `/reload-plugins`; do that. The refresh runs on Claude Code's own schedule,
+so to update right now, type `/telder:update`, then `/reload-plugins`. It refreshes the marketplace you
+installed from and moves your install to its current release, and does nothing else. An install from
+Anthropic's directory moves to the version the directory serves, which can trail this repository while a new
+version is reviewed.
 
 ## More
 

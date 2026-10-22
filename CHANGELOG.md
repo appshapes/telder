@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- **`/telder:update` updates the plugin right now.** Claude Code updates Telder in the background when it
+  refreshes the marketplace, on its own schedule, so a release can take a while to arrive. Type `/telder:update`:
+  Claude refreshes the marketplace you installed from, moves your install to its current release, and asks you
+  to type `/reload-plugins`. It moves an install you already have and nothing else; it never adds a marketplace
+  or installs a plugin. An install from Anthropic's directory moves to the version the directory serves.
+
 ## [0.5.0] — 2026-10-22
 
 ### Added

@@ -67,7 +67,7 @@ renames the changelog's `[Unreleased]` section to the version and today's date u
 commits through the push chain as `<n>: Release X.Y.Z`, tags `vX.Y.Z` and pushes the tag. `release.yml` then
 checks that the manifest pins the tag, takes that changelog section (`scripts/ci/release-notes.sh`) and publishes
 the GitHub release with it as the notes. Claude Code updates the plugin from the marketplace in the background
-and asks for `/reload-plugins`. A published tag is never moved: bump the patch version instead. A tree that has
+and asks for `/reload-plugins`, on its own schedule; `/telder:update` does it at once. A published tag is never moved: bump the patch version instead. A tree that has
 never been released carries `0.0.0`, which the script refuses to release.
 
 ## The directory listing
@@ -109,6 +109,7 @@ remaining hold is left for a reviewer.
 | `plugin/hooks/hooks.json` | the one hook, exec form |
 | `plugin/scripts/tldr-hook` | the script: reads the hook input, gates on length, runs the nested `claude -p`, replies |
 | `plugin/skills/tldr/SKILL.md` | `/tldr`, `/tldr off`, `/tldr on`, `/tldr status` |
+| `plugin/skills/update/SKILL.md` | `/telder:update`: refresh the marketplace, update the install, ask for `/reload-plugins` |
 | [`plugin/README.md`](../plugin/README.md) | the plugin's own page and its listing in Anthropic's directory: what it does, its options, what leaves the machine |
 | `plugin/.claude-plugin/icon.png` | the listing icon, rendered from [`docs/assets/icon.svg`](assets/icon.svg) |
 | `tests/` | the unit tests and the sample hook input |

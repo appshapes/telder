@@ -10,8 +10,8 @@ Invoked via `/command`:
 - `/trello-create <title> [--board] [--list] [--from file.md]` - Create a Trello card (defaults: board AppShapes, list Wanting)
 - `/trello-read <number | title | id>` - Read a Trello card: description, comments, checklists, attachments
 
-The plugin's own skill, `/tldr`, is documented in [`plugin/README.md`](../plugin/README.md); it is the product,
-not the tooling for working on it.
+The plugin's own skills, `/tldr` and `/telder:update`, are documented in [`plugin/README.md`](../plugin/README.md);
+they are the product, not the tooling for working on it.
 
 ## Daily Workflow
 

@@ -5,7 +5,8 @@ screen: the most important points first, in simple language, for a reader with n
 through the Claude Code login you already have. There is nothing to configure, no account to create and no API
 key to give.
 
-The plugin's name is `telder`. It is one hook, one script and one skill, `/tldr`, and it works in Claude Code.
+The plugin's name is `telder`. It is one hook, one script and two skills, `/tldr` and `/telder:update`, and it
+works in Claude Code.
 
 ## What you see
 
@@ -51,6 +52,10 @@ is. The switch covers every session on this machine and needs no restart.
 Outside the directory, the plugin installs from its own marketplace: in Claude Code, type
 `/plugin marketplace add appshapes/telder`, then `/plugin install telder@telder`, then `/reload-plugins`.
 
+Claude Code updates the plugin in the background when it refreshes the marketplace. To update right now, type
+`/telder:update`, then `/reload-plugins`. Claude refreshes the marketplace you installed from and moves your
+install to its current release; it never adds a marketplace or installs anything.
+
 ## Options
 
 Eight, all optional. Ask your session, for example `Set the telder plugin's min_words to 200 and max_points to 3.`,
@@ -94,7 +99,9 @@ and the summary never reaches Claude.
 
 This section is the plugin's privacy statement.
 
-- **Fetched:** nothing. The plugin downloads nothing, when it is installed or later, and it has no network code.
+- **Fetched:** nothing by the plugin itself. It downloads nothing, when it is installed or later, and it has no
+  network code. When you type `/telder:update`, and only then, Claude Code fetches the plugin's current release
+  from where you installed it, which is the same fetch its own background updates make.
 - **Sent, and to where:** the text of a reply that is long enough to summarize, together with the instructions
   above (the plugin's, yours, and the project's `.telder.md`), goes to Anthropic, the same service your Claude
   Code session already talks to. It travels in one run of the `claude` program on your machine, under the login
@@ -113,7 +120,9 @@ This section is the plugin's privacy statement.
   name, never the reply or the summary.
 - **Run:** one program, `claude`: the executable that runs your session when Claude Code names it, otherwise the
   `claude` on your `PATH`. The script starts it directly, without a shell, with the arguments listed in the next
-  section. No other program is run.
+  section. No other program is run. When you type `/telder:update`, Claude runs Claude Code's own plugin
+  commands in your session, where you see them: one lists your installs, one refreshes the marketplace Telder
+  came from, and one updates Telder there.
 - **Kept for how long:** nothing is kept once the reply is shown. The file of pieces is deleted the moment the
   reply is complete. If a reply is interrupted, its pieces are deleted the next time a reply completes, once
   they are an hour old. Uninstalling the plugin removes its data directory, by Claude Code's default. What
