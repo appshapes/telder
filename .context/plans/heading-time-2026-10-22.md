@@ -30,4 +30,8 @@ TL;DR heading, in local time", then release.
 
 ## Release
 
-Filled in below once cut.
+`0.5.0`, 2026-10-22, cut by session `telder-1b` with `make release version=0.5.0 card=123`: the feature commit is
+`cbd8d94`, the release commit `24f620a`, the tag `v0.5.0`; `release.yml` run 39744979763 published
+https://github.com/appshapes/telder/releases/tag/v0.5.0, marked latest, with the changelog section as its notes.
+`ci.yml` run 39744975460 on the release commit was green on both jobs (`fast`, `macos`); the run on `cbd8d94`
+was cancelled, superseded by the release push. The runner's inventory step still prints shellcheck 0.9.0.
