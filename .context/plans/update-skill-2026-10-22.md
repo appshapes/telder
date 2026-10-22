@@ -55,12 +55,6 @@ part of `${CLAUDE_PLUGIN_ROOT}` (`plugins/cache/<marketplace>/telder/<version>`,
 asks for the reload unless it equals the installed version, or when the path ends in no version
 (`--plugin-dir`).
 
-## Not measured
-
-- An install from the directory being updated by `claude plugin update telder@anthropic-plugin-directory`: this
-  machine has only the `telder@telder` install, and a second install would double the hook.
-- A project-scope or local-scope Telder install.
-
 Measured before the 0.6.1 release, with the working-tree skill copied under folders shaped like the cache
 (`.../cache/telder/telder/0.5.0` and `.../0.6.0`) and loaded with `--plugin-dir`, the install at 0.6.0, the same
 nested run as above:
@@ -73,3 +67,9 @@ nested run as above:
 
 Each run made the same three calls with no permission denial, which also shows that `${CLAUDE_PLUGIN_ROOT}` is
 replaced by the loaded path in the skill's text. The release's own ids are on card 124.
+
+## Not measured
+
+- An install from the directory being updated by `claude plugin update telder@anthropic-plugin-directory`: this
+  machine has only the `telder@telder` install, and a second install would double the hook.
+- A project-scope or local-scope Telder install.

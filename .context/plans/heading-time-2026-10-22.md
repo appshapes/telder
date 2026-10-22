@@ -28,6 +28,14 @@ TL;DR heading, in local time", then release.
   the process's zone.
 - `make test` runs 46 tests.
 
+## Changed later the same day: month, day, year (card 125)
+
+Rjae: "Humans prefer to see 2026-10-22 as 10-22-2026." The format is now `%m-%d-%Y %H:%M`, so the heading reads
+`TL;DR 10-22-2026 14:05`; everything else above stands (local time, taken when the reply ends, the `heading`
+command, nothing new leaves the machine). The order is the one Rjae reads a date in; a reader elsewhere may
+take `10-22` for day-month, which the four-digit year at the end does not resolve. Released as 0.7.0; the
+release's ids are on card 125.
+
 ## Release
 
 `0.5.0`, 2026-10-22, cut by session `telder-1b` with `make release version=0.5.0 card=123`: the feature commit is

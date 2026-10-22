@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- **The date after the heading reads month, day, year.** The heading now ends like `TL;DR 10-22-2026 14:05`
+  (it was `2026-10-22 14:05`), the order people read a date in. The time stays the hour and minute, 24-hour, in
+  your machine's local time.
+
 ## [0.6.1] — 2026-10-22
 
 ### Fixed

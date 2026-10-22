@@ -42,7 +42,7 @@ A reply shorter than about 300 words of prose is shown as it is. A longer one en
 ```
   ... Dust, smoke and water droplets can make those colors even stronger.
   ---
-  TL;DR 2026-10-22 14:05
+  TL;DR 10-22-2026 14:05
   - Blue light scatters far more than red as sunlight crosses the air, so the sky looks blue.
   - The sun gives off less violet and our eyes see blue better, so the sky is not violet.
   - At sunrise and sunset light crosses much more air, which scatters the blue away and leaves red.

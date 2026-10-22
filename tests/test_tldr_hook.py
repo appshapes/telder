@@ -31,7 +31,7 @@ hook = load_script()
 
 LONG = " ".join(f"word{i}" for i in range(400))
 SHORT = "Done. Two files changed."
-STAMP = "2026-10-22 14:05"
+STAMP = "10-22-2026 14:05"
 NOW = time.struct_time((2026, 10, 22, 14, 5, 9, 3, 295, -1))  # the moment STAMP shows, as a struct_time
 
 
