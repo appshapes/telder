@@ -1,11 +1,14 @@
 {
   "version": 1,
-  "adapter": "supabase",
-  "url": "https://wmgtaraqmoufmrnyojzf.supabase.co",
-  "publishable_key": "sb_publishable_qUEiHdtSB2fXSmgVManc-g_c-uZOyWj",
-  "team_ref": "5d4513dc-08c2-40f1-a615-b2f23f623859",
-  "team_name": "telder",
+  "adapter": "rest",
+  "url": "https://brigade.appshapes.com",
+  "team_ref": "3b8904c6-6b11-41aa-a0e7-36bc3986c666",
+  "team_name": "appshapes",
   "gateway": {
-    "email": "telder-team@appshapes.com"
+    "email": "appshapes-team@appshapes.com",
+    "slack": "appshapes.slack.com: @brigade"
+  },
+  "sync": {
+    "board": true
   }
 }
