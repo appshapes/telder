@@ -23,17 +23,18 @@ The documentation is one tree for humans and one for agents (card 127,
   belongs in one of those files, never in `CLAUDE.md` itself, and every file under `docs/agent/repository/` must
   be imported there and linked from `AGENTS.md`. Inside a session, the plugin's skills are the agent's
   documentation: `docs/agent/in-a-session/skills.md` names each skill by path.
-- **The gate** is `make docs-check` (`scripts/ci/docscheck.py`, `tests/test_docscheck.py`), offline, standard
-  library only, in `make test`, CI's `fast` job, `scripts/release-prep.sh` and `release.yml`. Its rules: the
-  README shape; the persona and topic shapes above; every relative link and `#anchor` in the root pages, the
-  listing and `docs/**` resolves, and every `@` import in `CLAUDE.md` names a file; every page under `docs/` is
-  reachable from `README.md`; every `plugin/skills/*/SKILL.md` is named on the skills page; the rule files'
-  imports and links; every `userConfig` option of `plugin/.claude-plugin/plugin.json` named in
-  `docs/user/configure/options.md` and in `plugin/README.md`; `docs/developer/reference/make-targets.md` equal to
-  what `make docs-generate` writes from the Makefile's `##` help lines; and a `## [<version>]` changelog section
-  for the version the manifest pins. External links are never checked: a site going down is not a bug in this
-  repository.
-- **When you change** a `make` target's help line, run `make docs-generate`. When you add or change an option,
-  its default changes in three places: the manifest, the options page and the listing. When you add a skill,
-  add its row to the skills page. When you add a page, name it from a `Details:` line. When a procedure
-  changes, change the leaf and the TL;DR together, and the listing where it says the same.
+- **The gate** is `make docs-check` (`scripts/ci/docscheck.py`, `tests/test_docscheck.py`), offline, standard library
+  only, in `make test`, CI's `fast` job, `scripts/release-prep.sh` and `release.yml`. Its rules: the README shape;
+  the persona and topic shapes above; every relative link and `#anchor` in the root pages, the listing and `docs/**`
+  resolves, and every `@` import in `CLAUDE.md` names a file; every page under `docs/` is reachable from `README.md`;
+  every `plugin/skills/*/SKILL.md` is named on the skills page, and every `.claude/skills/*/SKILL.md` is linked from
+  the conventions rule file; the rule files' imports and links; every `userConfig` option of
+  `plugin/.claude-plugin/plugin.json` named in `docs/user/configure/options.md` and in `plugin/README.md`;
+  `docs/developer/reference/make-targets.md` equal to what `make docs-generate` writes from the Makefile's `##` help
+  lines; and a `## [<version>]` changelog section for the version the manifest pins. External links are never
+  checked: a site going down is not a bug in this repository.
+- **When you change** a `make` target's help line, run `make docs-generate`. When you add or change an option, its
+  default changes in three places: the manifest, the options page and the listing. When you add a plugin skill, add
+  its row to the skills page; a repository skill, its link in the conventions rule file. When you add a page, name it
+  from a `Details:` line. When a procedure changes, change the leaf and the TL;DR together, and the listing where it
+  says the same.

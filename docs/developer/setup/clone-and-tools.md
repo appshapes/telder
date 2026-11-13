@@ -25,9 +25,9 @@ is the same list.
 ## Working with Claude Code
 
 The repository is worked on with Claude Code: `CLAUDE.md` is the agent's root and loads the rule files under
-`docs/agent/repository/`; the project's own skills are `/commit` and `/work-item-start`
-([Contribute](../contribute/README.md)). `.claude/settings.json` names the `telder` and `brigade`
-marketplaces with auto-update on, so a session in this checkout has Telder itself installed and gets a TL;DR
-under its own long replies.
+`docs/agent/repository/`; the project's own skills are [`/commit`](../../../.claude/skills/commit/SKILL.md) and
+[`/work-item-start`](../../../.claude/skills/work-item-start/SKILL.md) ([Contribute](../contribute/README.md)).
+`.claude/settings.json` names the `telder` and `brigade` marketplaces with auto-update on, so a session in this
+checkout has Telder itself installed and gets a TL;DR under its own long replies.
 
 Next: [Try the plugin from your checkout](dev-loop.md).

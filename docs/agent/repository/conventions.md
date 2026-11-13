@@ -28,8 +28,10 @@
   every teammate's machine. Numbers in commits and records before 2026-11-13 are cards of the AppShapes Trello
   board, which holds no open card; they are history, and the same number on the board can be another piece of
   work.
-- **Skills of this repository** live in `.claude/skills/`: `commit` and `work-item-start`. The plugin's own skills
-  (`plugin/skills/`) are the product.
+- **Skills of this repository** live in `.claude/skills/`: [`commit`](../../../.claude/skills/commit/SKILL.md) and
+  [`work-item-start`](../../../.claude/skills/work-item-start/SKILL.md). Each is linked here, and `make docs-check`
+  fails on one that is not and on a link to one that is gone. The plugin's own skills (`plugin/skills/`) are the
+  product.
 - **Names.** Telder is the product and `telder` the plugin (`/plugin install telder@telder`; it was `tldr` until
   0.3.0, renamed for the directory, where a name is permanent and `tldr` drew three look-alike holds); `/tldr`
   and `/telder:update` are its skills; the script `tldr-hook`, its log prefix `tldr:` and `TLDR_INNER` keep the

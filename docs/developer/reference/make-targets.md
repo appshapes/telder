@@ -12,7 +12,7 @@ Makefile's `##` comment, never this page. A trailing ` (CI)` marks a target a wo
 | `lint` | shellcheck every shell script in the repository (CI) |
 | `plugin-check` | Static checks of plugin/: file allowlist, exec-form hooks, script mode, no bin/ or MCP, shellcheck, no secrets (CI) |
 | `plugin-validate` | claude plugin validate on the marketplace and the plugin root (CI) |
-| `docs-check` | The documentation gate (card 127): README and persona shapes, links and anchors, orphans, the skills page, the options pages, the generated make-target page, the changelog section (CI) |
+| `docs-check` | The documentation gate (card 127): README and persona shapes, links and anchors, orphans, the plugin's and the repository's skills, the options pages, the generated make-target page, the changelog section (CI) |
 | `docs-generate` | Regenerate docs/developer/reference/make-targets.md from this Makefile's help lines (docs-check fails when it is stale) |
 | `hook-smoke` | Run the hook script on the sample input in tests/fixtures and print its reply (needs a logged-in claude) |
 | `plugin-dev` | Start Claude Code with the local plugin (usage: make plugin-dev [opts='{"model":"..."}'] [mode=default]) |

@@ -59,7 +59,7 @@ plugin-validate: ## claude plugin validate on the marketplace and the plugin roo
 	claude plugin validate ./plugin --strict
 
 .PHONY: docs-check
-docs-check: ## The documentation gate (card 127): README and persona shapes, links and anchors, orphans, the skills page, the options pages, the generated make-target page, the changelog section (CI)
+docs-check: ## The documentation gate (card 127): README and persona shapes, links and anchors, orphans, the plugin's and the repository's skills, the options pages, the generated make-target page, the changelog section (CI)
 	$(python) scripts/ci/docscheck.py check
 
 .PHONY: docs-generate

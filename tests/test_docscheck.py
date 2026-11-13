@@ -94,6 +94,10 @@ MUTATIONS = [
      lambda root: write(root, "docs/lost.md", "# Lost\n\nNo chain of links reaches this page.\n")),
     ("skills: a skill missing from the skills page", "skills",
      lambda root: write(root, "plugin/skills/extra/SKILL.md", "---\nname: extra\n---\n")),
+    ("skills: a repository skill the conventions rule file does not link", "skills",
+     lambda root: write(root, ".claude/skills/extra/SKILL.md", "---\nname: extra\n---\n")),
+    ("links: a page that links a removed repository skill", "links",
+     lambda root: shutil.rmtree(os.path.join(root, ".claude", "skills", "commit"))),
     ("agent: a rule file CLAUDE.md does not import", "agent",
      lambda root: replace(root, docscheck.CLAUDE_FILE, "@docs/agent/repository/gates.md\n", "")),
     ("options: an option with no row", "options",
@@ -119,6 +123,7 @@ class DocsGate(unittest.TestCase):
         self.assertGreater(summary.pages, 0)
         self.assertGreater(summary.links, 0)
         self.assertGreaterEqual(summary.skills, 2)
+        self.assertGreaterEqual(summary.repo_skills, 2)
         self.assertGreater(summary.targets, 0)
 
     def test_passes_on_an_unmutated_copy(self):

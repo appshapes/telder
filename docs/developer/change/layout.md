@@ -14,7 +14,7 @@
 | `scripts/release-prep.sh` | the release sequence |
 | `.github/workflows/` | `ci.yml`, `release.yml` |
 | `.claude-plugin/marketplace.json` | the `telder` marketplace that serves the plugin |
-| `.claude/` | the project's skills (`/commit`, `/work-item-start`) and the marketplace entries |
+| `.claude/` | the project's skills ([`/commit`](../../../.claude/skills/commit/SKILL.md), [`/work-item-start`](../../../.claude/skills/work-item-start/SKILL.md)) and the marketplace entries |
 | `docs/` | the three persona trees (`user/`, `developer/`, `agent/`), the generated reference, the icon's source |
 | `README.md`, `CLAUDE.md`, `AGENTS.md` | the human's root, the agent's root with its imports, the same files as links |
 | [`CHANGELOG.md`](../../../CHANGELOG.md), [`SECURITY.md`](../../../SECURITY.md) | what changed in each release; how to report a vulnerability |

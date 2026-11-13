@@ -29,8 +29,10 @@ MAKEFILE_FILE = "Makefile"
 PLUGIN_MANIFEST = "plugin/.claude-plugin/plugin.json"
 PACKAGE_PAGE = "plugin/README.md"
 SKILLS_DIR = "plugin/skills"
+REPO_SKILLS_DIR = ".claude/skills"
 DOCS_DIR = "docs"
 RULES_DIR = "docs/agent/repository"
+CONVENTIONS_PAGE = "docs/agent/repository/conventions.md"
 SKILLS_PAGE = "docs/agent/in-a-session/skills.md"
 OPTIONS_PAGE = "docs/user/configure/options.md"
 MAKE_TARGETS_PAGE = "docs/developer/reference/make-targets.md"
@@ -95,10 +97,12 @@ class Summary:
         self.pages = 0
         self.links = 0
         self.skills = 0
+        self.repo_skills = 0
         self.targets = 0
 
     def __str__(self):
-        return "%d pages, %d links, %d skills, %d make targets" % (self.pages, self.links, self.skills, self.targets)
+        return "%d pages, %d links, %d skills, %d repository skills, %d make targets" % (
+            self.pages, self.links, self.skills, self.repo_skills, self.targets)
 
 
 # ---------------------------------------------------------------------------
@@ -583,6 +587,27 @@ class Checker:
             if skill not in text:
                 self.find("skills", SKILLS_PAGE, "the skill %s is not named on the skills page" % skill)
 
+    def repo_skills(self):
+        """Every skill of the repository itself (.claude/skills/) is linked, at its SKILL.md, from the conventions
+        rule file (work item 291). The link is the point: a skill removed while a page still links it is a link the
+        links check refuses. Reported under the check "skills"."""
+        page = self.docs.get(CONVENTIONS_PAGE)
+        if page is None:
+            self.find("skills", CONVENTIONS_PAGE, "the conventions rule file is missing")
+            return
+        linked = set()
+        for l in page.links:
+            dest, _, internal = resolve(CONVENTIONS_PAGE, l.target)
+            if internal:
+                linked.add(dest)
+        for name in self.subdirs(REPO_SKILLS_DIR):
+            skill = "%s/%s/SKILL.md" % (REPO_SKILLS_DIR, name)
+            if not self.is_file(skill):
+                continue
+            self.sum.repo_skills += 1
+            if skill not in linked:
+                self.find("skills", CONVENTIONS_PAGE, "the repository skill %s has no link to its SKILL.md from the conventions rule file" % skill)
+
     # --- 6. agent ------------------------------------------------------------------
 
     def agent(self):
@@ -693,6 +718,7 @@ def run(root):
     c.links()
     c.reach()
     c.skills()
+    c.repo_skills()
     c.agent()
     c.options()
     c.make_targets()

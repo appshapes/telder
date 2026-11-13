@@ -18,7 +18,7 @@ as a guard before publishing.
 | `topic` | a topic root lacks the table, an action has no `Details:` line or no row, a row names no action, an action section is over 20 lines, or a page beside the README is named by no `Details:` line |
 | `links` | a relative link or `#anchor` in `README.md`, `AGENTS.md`, `CLAUDE.md`, `CHANGELOG.md`, `SECURITY.md`, `plugin/README.md` or `docs/**` does not resolve; an `@import` in `CLAUDE.md` names no file |
 | `reach` | a page under `docs/` is reachable from `README.md` by no chain of links |
-| `skills` | a `plugin/skills/*/SKILL.md` is not named by path on `docs/agent/in-a-session/skills.md` |
+| `skills` | a `plugin/skills/*/SKILL.md` is not named by path on `docs/agent/in-a-session/skills.md`, or a `.claude/skills/*/SKILL.md` (the repository's own skills) is not linked from `docs/agent/repository/conventions.md`; a link to a skill that was removed fails `links` |
 | `agent` | a file under `docs/agent/repository/` is not imported by `CLAUDE.md` or not linked from `AGENTS.md` |
 | `options` | a `userConfig` key of `plugin/.claude-plugin/plugin.json` is not in `docs/user/configure/options.md` or not in `plugin/README.md` |
 | `make` | `docs/developer/reference/make-targets.md` differs from what `make docs-generate` writes |
