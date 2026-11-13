@@ -17,10 +17,12 @@ one subject and is the only place its rules live.
 ## Follow the conventions
 
 1. `master`, merges only, never rebase; `make push message="<work item>: <Imperative summary>"` or `/commit <work item>`.
-2. Plans in `.context/plans/`, scratch in `.ignored/`; `handoff-2026-09-30.md` is the state, `telder-build-2026-09-30.md` the record.
-3. Work items are on the team's Brigade Board, tagged `telder`; `/work-item-start <n>` takes one to Done when it is
+2. A merge conflict is the session's: resolved in place, both sides kept, the merge commit naming each file and how;
+   never aborted, never handed back unless a side's intent cannot be told.
+3. Plans in `.context/plans/`, scratch in `.ignored/`; `handoff-2026-09-30.md` is the state, `telder-build-2026-09-30.md` the record.
+4. Work items are on the team's Brigade Board, tagged `telder`; `/work-item-start <n>` takes one to Done when it is
    shipped and nothing on it is open, unasked; never closed.
-4. Telder is the product, `telder` the plugin; `/tldr` and `/telder:update` its skills; the script keeps the old spelling.
+5. Telder is the product, `telder` the plugin; `/tldr` and `/telder:update` its skills; the script keeps the old spelling.
 
 Details: [Conventions](conventions.md).
 

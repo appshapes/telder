@@ -1,7 +1,26 @@
 # Conventions: git, commits, work items, plans, names
 
 - **Branch and history.** Work on `master`. Merges only: never `git rebase`, never `git pull --rebase`, never a
-  force-push of pushed history. Integrate with `git pull --no-edit`. On a merge conflict, stop and hand it back.
+  force-push of pushed history. Integrate with `git pull --no-edit`.
+- **A merge conflict is the session's to resolve, in place** (the owner's global rule, made this repository's on
+  2026-11-13, work item 297). A pull conflicts when origin and local commits it has not seen change the same lines.
+  1. Read what each side meant (`git log --merge -p`, and the work items its commits name), keep both, and leave
+     no marker; fix as well what the merged tree breaks beyond the markers (a file that merged cleanly but fails
+     combined).
+  2. Stage the files the resolution touched, and none of the work's own uncommitted changes, then run the gates on
+     the merged tree (`make test plugin-check`, and `make lint` for a shell file) until they pass.
+  3. Conclude the merge with a commit that names every file that conflicted and how it was resolved:
+     `git commit -m "<work item>: Merge origin/master: <file>: <how>; <file>: <how>"`.
+  4. Push: `make push message="…"` when the work itself is still uncommitted, otherwise `make pull` then
+     `git push`. If origin moved again, its new conflict is resolved the same way.
+
+  When the pull refuses because an uncommitted change would be overwritten, no merge has started: `git stash`,
+  `make pull`, `git stash pop`; resolve the markers the pop leaves as in step 1, clear the unmerged state with
+  `git reset -q`, `git stash drop`, and run `make push` again with a message that also names each file that
+  conflicted and how. Never `git merge --abort` to escape a conflict, never a rebase or a force-push to resolve
+  one. When what one side meant cannot be told from the code, its
+  commits and its work item, ask the user at once and leave the merge in progress, never aborted: until it is
+  concluded, no other session in the checkout can pull.
 - **Commit messages** are `<work item>: <Imperative summary>`, the number being the Brigade Board work item the
   work belongs to. Commit and push through `make push message="<work item>: …"` (pull, test, plugin-check, stage
   every working-tree change, commit, push) or the `/commit <work item>` skill, which is a port of it and runs it

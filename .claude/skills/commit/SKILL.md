@@ -63,5 +63,8 @@ This pulls, tests, checks the plugin tree, commits and pushes. The only stops ar
 ## 6. Report the result
 
 - On success, confirm the commit was pushed.
-- On failure (test failure, plugin-check failure, merge conflict), report the error clearly. Do not retry
+- On a merge conflict, or a pull that refuses because a local change would be overwritten, resolve it in place by
+  the procedure in the conventions rule file (`docs/agent/repository/conventions.md`, "A merge conflict is the
+  session's to resolve"), which ends with the push. Never `git merge --abort`, never rebase, never force-push.
+- On any other failure (test failure, plugin-check failure), report the error clearly. Do not retry
   automatically.

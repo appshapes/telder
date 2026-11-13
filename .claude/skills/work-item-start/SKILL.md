@@ -77,17 +77,17 @@ check).
    terminal, or a choice the rules leave to them. Everything else is a routine call: make it, say so, and go on.
    Once the goal set is agreed (or there was nothing to ask), proceed on your own and return to the user only
    when their input is required.
-3. **Build it.** First check who else is in this checkout (`brigade sessions --here`) and that `git status` is
-   clean, because the commit chain stages every working-tree change; then bring the checkout up to date with
-   `make pull` (a plain merge, never a rebase), so the work starts from origin's head. Build on `master` under the
-   rule files `CLAUDE.md` imports: merges only, the script Python 3 standard library in one file, exec form,
-   stdout only for the hook's JSON reply, no secret anywhere, the documentation moving with the change (`make
-   docs-generate` for a `make` help line, an option's default in the manifest, the options page and the listing,
-   a skill's row on the skills page, the leaf and its TL;DR for a procedure, the listing's privacy section for a
-   new read, write, send or run), plans in `.context/plans/`, scratch in `.ignored/`. Write the work item's entry
-   under `## [Unreleased]` in `CHANGELOG.md` when the user would see the change (none for a change that ships
-   nothing, such as a repository skill), and append its lines to `.context/plans/handoff-2026-09-30.md`, as part
-   of the work, not after it.
+3. **Build it.** First check who else is in this checkout (`brigade sessions --here`) and that `git status` is clean,
+   because the commit chain stages every working-tree change; then bring the checkout up to date with `make pull` (a
+   plain merge, never a rebase; a conflict is resolved in place, as the conventions rule file says), so the work
+   starts from origin's head. Build on `master` under the rule files `CLAUDE.md` imports: merges only, the script
+   Python 3 standard library in one file, exec form, stdout only for the hook's JSON reply, no secret anywhere, the
+   documentation moving with the change (`make docs-generate` for a `make` help line, an option's default in the
+   manifest, the options page and the listing, a skill's row on the skills page, the leaf and its TL;DR for a
+   procedure, the listing's privacy section for a new read, write, send or run), plans in `.context/plans/`, scratch
+   in `.ignored/`. Write the work item's entry under `## [Unreleased]` in `CHANGELOG.md` when the user would see the
+   change (none for a change that ships nothing, such as a repository skill), and append its lines to
+   `.context/plans/handoff-2026-09-30.md`, as part of the work, not after it.
 4. **Prove it working.** Run the acceptance gate, `make test lint plugin-check plugin-validate docs-check`, and
    shellcheck 0.9.0 in Docker as well as the local one for a shell file (the gates rule file has the command).
    Then hold every done criterion of the work item against the running thing: a change to the script or the
@@ -96,17 +96,18 @@ check).
    session: say what to ask it and what the screen should show, and wait for what they saw), a gate by making it
    fail once on purpose, a page by reading it where it lands in the tree. A green build alone proves nothing.
    Note how each criterion was checked, for the landing comment.
-5. **Get the agent review** before anything reaches origin (the `code-review` skill on the working tree), fix
-   what it finds, then commit and push with the `commit` skill and the work item's number (`make push`: pull,
-   test, plugin-check, stage, commit, push). Watch `ci.yml` on the pushed commit (`gh run list --commit <sha>`,
-   then `gh run watch <run id>`) until both jobs, `fast` and `macos`, are green; a red job is part of the work
-   item until it is fixed. **Deployed to development** means this: the work is on origin's `master` and `ci.yml`
-   is green on it. Telder has no development environment, and every push to `master` is also a new version for
-   Anthropic's directory, which reviews it on its own time. **When the work changes what the plugin ships**
-   (anything under `plugin/`), it is shipped only by a release, and the release is this work item's, at the
-   version step 2 named: `make release version=<v> work_item=<number>` on a clean `master` with `gh` logged in,
-   then `gh run list --workflow release.yml` until the release run is green. Work that ships nothing (a page, a
-   gate, a repository skill) is shipped when it is on `master` with CI green.
+5. **Get the agent review** before anything reaches origin (the `code-review` skill on the working tree), fix what it
+   finds, then commit and push with the `commit` skill and the work item's number (`make push`: pull, test,
+   plugin-check, stage, commit, push; a conflict in its pull is the commit skill's to resolve in place, never handed
+   back). Watch `ci.yml` on the pushed commit (`gh run list --commit <sha>`, then `gh run watch <run id>`) until both
+   jobs, `fast` and `macos`, are green; a red job is part of the work item until it is fixed. **Deployed to
+   development** means this: the work is on origin's `master` and `ci.yml` is green on it. Telder has no development
+   environment, and every push to `master` is also a new version for Anthropic's directory, which reviews it on its
+   own time. **When the work changes what the plugin ships** (anything under `plugin/`), it is shipped only by a
+   release, and the release is this work item's, at the version step 2 named:
+   `make release version=<v> work_item=<number>` on a clean `master` with `gh` logged in, then
+   `gh run list --workflow release.yml` until the release run is green. Work that ships nothing (a page, a gate, a
+   repository skill) is shipped when it is on `master` with CI green.
 6. **Land it on the work item**: the landing comment first, `brigade work-item comment <number>` with the text on
    stdin, saying where the work landed (the commits, and the version, tag and release run when there is one),
    what changed, every existing file touched and why, how each done criterion was checked, and what is still open

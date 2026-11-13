@@ -10,7 +10,8 @@
 ## Commit and push
 
 1. `make push message="<work item>: <Imperative summary>"`, or `/commit <work item>` in Claude Code.
-2. `master` only, merges only, never rebase; plans in `.context/plans/`, scratch in `.ignored/`.
+2. `master` only, merges only, never rebase; a merge conflict is resolved in place, never aborted.
+3. Plans in `.context/plans/`, scratch in `.ignored/`.
 
 Details: [Commit and push](commits.md).
 
