@@ -11,9 +11,10 @@ and `plugin-check`, stages **every** working-tree change (`git add --verbose :/ 
 adds the push. In a shared checkout, check `git status` first: another session's edits are staged too. On a
 merge conflict, stop and hand it back; never `git merge --abort` into a rebase, never a force-push.
 
-- **The message** is `<card>: <Imperative summary>`, the number being the AppShapes Trello card the work belongs
-  to ([Work a card](cards.md)). `/commit <card>` in Claude Code writes the message from the diff, confirms it
-  with you and runs the chain; it refuses without a numeric card.
+- **The message** is `<work item>: <Imperative summary>`, the number being the Brigade Board work item the work
+  belongs to ([Take a work item](work-items.md)). `/commit <work item>` in Claude Code writes the message from the
+  diff, prints the command and runs the chain without asking; it refuses without a numeric work item and stops
+  for anything in the diff that looks like a secret.
 - **Plans** go in `.context/plans/`, **scratch** in `.ignored/` (gitignored); never a stray file in the root. A
   piece of work that lands appends its lines to `.context/plans/handoff-2026-09-30.md`, the state of the work,
   and a feature gets a dated record page beside it ([Evidence](../evidence/README.md)).

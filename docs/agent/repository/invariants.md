@@ -16,10 +16,10 @@
   name, because the directory's scan holds a plugin that reads the environment as a whole or by a computed name
   (measured 2026-10-01). Never `--bare` on the nested call: bare mode reads no OAuth login, so every subscription
   user would get nothing.
-- **Secrets.** Never put a secret in the hook's output, in a log line, on a card or in a file under the project
-  directory. The script never reads the transcript file and never reads `$CLAUDE_CONFIG_DIR/sessions/*.key`; the
-  reply text it summarizes reaches it on stdin from Claude Code and goes to the summarizing model and nowhere
-  else.
+- **Secrets.** Never put a secret in the hook's output, in a log line, on a work item or in a file under the
+  project directory. The script never reads the transcript file and never reads
+  `$CLAUDE_CONFIG_DIR/sessions/*.key`; the reply text it summarizes reaches it on stdin from Claude Code and goes
+  to the summarizing model and nowhere else.
 - **The instruction layers.** The instructions the summarizing model follows are layered in the script
   (`instruction_parts`): the plugin's own, the `instructions` option, the `instructions_file` option, the
   project's `.telder.md`, then the fixed format rules, which the parser depends on and no layer may remove. The

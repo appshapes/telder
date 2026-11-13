@@ -10,7 +10,8 @@
 ## Set up a clone
 
 1. Python 3.9 or newer, `make`, `git`; shellcheck for `make lint` and `make plugin-check`; `claude` on `PATH`
-   for `make plugin-validate`; `gh` logged in for `make release`.
+   for `make plugin-validate`; `gh` logged in for `make release`; the Brigade plugin, joined to the team
+   `appshapes`, for the board.
 2. `make setup` checks them and sets `push.autoSetupRemote`; `make test` runs in seconds with no login.
 
 Details: [Set up a clone](clone-and-tools.md).

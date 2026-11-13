@@ -9,7 +9,7 @@ and a second model, called by the hook, writes the summaries; on this repository
 | If you want to | Go to |
 | --- | --- |
 | act in a session: `/tldr`, `/telder:update`, and what the summarizing model is asked | [In a session](in-a-session/README.md) |
-| work on this repository: the rules, the gates, the cards, the documentation | [On this repository](repository/README.md) |
+| work on this repository: the rules, the gates, the work items, the documentation | [On this repository](repository/README.md) |
 
 ## In a session
 

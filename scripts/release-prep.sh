@@ -1,16 +1,17 @@
 #!/bin/sh
-# usage: card=<n> scripts/release-prep.sh <version>          (run by `make release version=0.1.0 card=<n>`)
-#        DRY_RUN=1 card=<n> scripts/release-prep.sh <version>  -- steps 1-2 for real, then stop and PRINT 3-4
+# usage: work_item=<n> scripts/release-prep.sh <version>          (run by `make release version=0.1.0 work_item=<n>`)
+#        DRY_RUN=1 work_item=<n> scripts/release-prep.sh <version>  -- steps 1-2 for real, then stop and PRINT 3-4
+#        card=<n> is still accepted in place of work_item=<n>
 #
 # The release sequence, ported from appshapes/brigade and cut down: no binaries, no checksums, so the tag is the
 # release and release.yml publishes it with the changelog section as its notes.
 #
-#   preconditions   a MAJOR.MINOR.PATCH version, a card number, the repository root, a clean tree, master, a
+#   preconditions   a MAJOR.MINOR.PATCH version, a work item's number, the repository root, a clean tree, master, a
 #                   non-empty Unreleased section, the documentation gate green (make docs-check)
 #   1  bump the pin        plugin/.claude-plugin/plugin.json "version"
 #   2  the changelog       CHANGELOG.md: rename `## [Unreleased]` to `## [<v>] — <today>` under a fresh
 #                          `## [Unreleased]`; refuse an empty Unreleased section (a release says what changed)
-#   3  commit              make push message="<card>: Release <v>"
+#   3  commit              make push message="<work item>: Release <v>"
 #   4  tag                 git tag -a v<v> && git push origin v<v>  ->  release.yml publishes the GitHub release
 #
 # A PUBLISHED tag is never rewritten: bump the patch version instead. A tag that release.yml refused (version
@@ -24,6 +25,7 @@ plugin_json=plugin/.claude-plugin/plugin.json
 changelog=CHANGELOG.md
 
 v=${1:-}
+work_item=${work_item:-}
 card=${card:-}
 case ${DRY_RUN:-0} in
   ''|0|no|false) dry_run=0 ;;
@@ -31,7 +33,7 @@ case ${DRY_RUN:-0} in
 esac
 
 # ---- preconditions -------------------------------------------------------------------------------------------
-[ -n "$v" ] || die "usage: scripts/release-prep.sh <version>   (make release version=X.Y.Z card=<n>)"
+[ -n "$v" ] || die "usage: scripts/release-prep.sh <version>   (make release version=X.Y.Z work_item=<n>)"
 case $v in
   v*)                   die "pass the version without the leading 'v' (got '$v'); the script tags v<version> itself" ;;
   0.0.0)                die "0.0.0 is the pre-release sentinel and cannot be released: pass make release version=X.Y.Z" ;;
@@ -39,9 +41,14 @@ case $v in
   [0-9]*.[0-9]*.[0-9]*) ;;
   *)                    die "not a MAJOR.MINOR.PATCH version: '$v'" ;;
 esac
-case $card in
-  '')        die "usage: make release version=X.Y.Z card=<n>: card is the AppShapes Trello card the release belongs to" ;;
-  *[!0-9]*)  die "card must be a Trello card number (got '$card')" ;;
+# card=<n> is the earlier spelling of work_item=<n>; two numbers that disagree are refused, never one chosen.
+if [ -n "$work_item" ] && [ -n "$card" ] && [ "$work_item" != "$card" ]; then
+  die "work_item=$work_item and card=$card disagree: pass one number"
+fi
+work_item=${work_item:-$card}
+case $work_item in
+  '')        die "usage: make release version=X.Y.Z work_item=<n>: the number of the Brigade Board work item the release belongs to" ;;
+  *[!0-9]*)  die "work_item must be a work item's number (got '$work_item')" ;;
 esac
 if [ ! -f "$plugin_json" ] || [ ! -f "$changelog" ]; then
   die "run this from the repository root (no $plugin_json / $changelog here)"
@@ -90,13 +97,13 @@ say "2. $changelog: Unreleased is now [$v] — $today"
 
 if [ "$dry_run" = 1 ]; then
   say "DRY_RUN=1: stopping before the commit. A real run would now:"
-  say "  3. make push message=\"$card: Release $v\""
+  say "  3. make push message=\"$work_item: Release $v\""
   say "  4. git tag -a v$v -m v$v && git push origin v$v"
   exit 0
 fi
 
 # ---- 3. commit --------------------------------------------------------------------------------------------------
-make push message="$card: Release $v"
+make push message="$work_item: Release $v"
 say "3. committed and pushed the release commit"
 
 # ---- 4. tag -----------------------------------------------------------------------------------------------------

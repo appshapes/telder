@@ -17,7 +17,7 @@ Makefile's `##` comment, never this page. A trailing ` (CI)` marks a target a wo
 | `hook-smoke` | Run the hook script on the sample input in tests/fixtures and print its reply (needs a logged-in claude) |
 | `plugin-dev` | Start Claude Code with the local plugin (usage: make plugin-dev [opts='{"model":"..."}'] [mode=default]) |
 | `print-version` | Print the version the plugin manifest pins |
-| `release` | Bump the manifest to $(version), move the changelog's Unreleased section, commit as `$(card): Release $(version)`, tag v$(version) and push the tag (usage: make release version=0.1.0 card=<n>) |
+| `release` | Bump the manifest to $(version), move the changelog's Unreleased section, commit as `<work item>: Release $(version)`, tag v$(version) and push the tag (usage: make release version=0.1.0 work_item=<n>; card=<n> is still accepted) |
 | `pull` | Merge origin into the current branch (plain merge — never rebase; no editor) |
-| `commit` | Pull, test, check the plugin tree, stage, commit (usage: make commit message="<card>: ...") |
+| `commit` | Pull, test, check the plugin tree, stage, commit (usage: make commit message="<work item>: ...") |
 | `push` | commit + push |

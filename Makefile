@@ -89,9 +89,9 @@ print-version: ## Print the version the plugin manifest pins
 	@echo $(plugin_version)
 
 .PHONY: release
-release: ## Bump the manifest to $(version), move the changelog's Unreleased section, commit as `$(card): Release $(version)`, tag v$(version) and push the tag (usage: make release version=0.1.0 card=<n>)
-	@test -n "$(version)" && test -n "$(card)" || { echo "usage: make release version=X.Y.Z card=<n>"; exit 1; }
-	card=$(card) scripts/release-prep.sh $(version)
+release: ## Bump the manifest to $(version), move the changelog's Unreleased section, commit as `<work item>: Release $(version)`, tag v$(version) and push the tag (usage: make release version=0.1.0 work_item=<n>; card=<n> is still accepted)
+	@test -n "$(version)" && test -n "$(work_item)$(card)" || { echo "usage: make release version=X.Y.Z work_item=<n>"; exit 1; }
+	work_item=$(or $(work_item),$(card)) scripts/release-prep.sh $(version)
 
 # ========== Commit chain ==========
 
@@ -100,8 +100,8 @@ pull: ## Merge origin into the current branch (plain merge — never rebase; no 
 	git pull --no-edit
 
 .PHONY: commit
-commit: pull test plugin-check ## Pull, test, check the plugin tree, stage, commit (usage: make commit message="<card>: ...")
-	@test -n "$(message)" || { echo "usage: make commit message=\"<card>: <Imperative summary>\""; exit 1; }
+commit: pull test plugin-check ## Pull, test, check the plugin tree, stage, commit (usage: make commit message="<work item>: ...")
+	@test -n "$(message)" || { echo "usage: make commit message=\"<work item>: <Imperative summary>\""; exit 1; }
 	git add --verbose :/ .
 	git commit -m "$(message)"
 

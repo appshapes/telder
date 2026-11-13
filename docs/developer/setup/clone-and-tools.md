@@ -17,7 +17,7 @@ script and runs the unit tests with the nested `claude -p` faked, so it needs no
 | `make plugin-validate` | `claude` on `PATH`, not logged in |
 | `make plugin-dev`, `make hook-smoke` | `claude` on `PATH`, logged in |
 | `make release` | `gh`, logged in |
-| the Trello skills | the Trello CLI ([Work a card](../contribute/cards.md)) |
+| the board (`brigade work-item`, `/work-item-start`) | the Brigade plugin, joined to the team `appshapes` ([Take a work item](../contribute/work-items.md)) |
 
 `make help` lists every target with its help line; the generated page [make targets](../reference/make-targets.md)
 is the same list.
@@ -25,8 +25,8 @@ is the same list.
 ## Working with Claude Code
 
 The repository is worked on with Claude Code: `CLAUDE.md` is the agent's root and loads the rule files under
-`docs/agent/repository/`; the project's own skills are `/commit`, `/trello-read`, `/trello-create` and
-`/trello-done` ([Contribute](../contribute/README.md)). `.claude/settings.json` names the `telder` and `brigade`
+`docs/agent/repository/`; the project's own skills are `/commit` and `/work-item-start`
+([Contribute](../contribute/README.md)). `.claude/settings.json` names the `telder` and `brigade`
 marketplaces with auto-update on, so a session in this checkout has Telder itself installed and gets a TL;DR
 under its own long replies.
 

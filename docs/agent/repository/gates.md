@@ -14,11 +14,11 @@
   `tests/test_docscheck.py`, in CI's `fast` job, as a precondition of `scripts/release-prep.sh` and as a guard
   step of `release.yml`. Its rules are in [documentation.md](documentation.md). A release with no
   `## [<version>]` changelog section does not leave the developer's machine.
-- **Releases.** `make release version=X.Y.Z card=<n>` bumps `plugin/.claude-plugin/plugin.json`, moves the
-  `[Unreleased]` section of `CHANGELOG.md` under the new version, commits through the push chain, tags
-  `vX.Y.Z` and pushes the tag; `release.yml` then publishes the GitHub release with that changelog section as
-  its notes. A published tag is never moved: bump the patch version instead. A tree that has never been released
-  carries `0.0.0`, which the script refuses to release.
+- **Releases.** `make release version=X.Y.Z work_item=<n>` (`card=<n>` is still accepted) bumps
+  `plugin/.claude-plugin/plugin.json`, moves the `[Unreleased]` section of `CHANGELOG.md` under the new version,
+  commits through the push chain, tags `vX.Y.Z` and pushes the tag; `release.yml` then publishes the GitHub
+  release with that changelog section as its notes. A published tag is never moved: bump the patch version
+  instead. A tree that has never been released carries `0.0.0`, which the script refuses to release.
 - **The dev loop** is `make plugin-dev` (a fresh Claude Code with `--plugin-dir ./plugin`, outside this
   session's environment: run it from your own terminal, never from inside a session);
   `make plugin-dev opts='{"model":"claude-sonnet-5-5"}'` passes options. `make hook-smoke` runs the script once

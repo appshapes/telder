@@ -14,9 +14,9 @@ and by Anthropic's directory once it has reviewed the push.
 
 1. Write the `[Unreleased]` section of `CHANGELOG.md`; `make docs-check` must pass. A patch for a fix, a minor
    for a feature; `1.0.0` not yet.
-2. `make release version=<v> card=<n>` on a clean `master` with `gh` logged in: pins the manifest, renames the
+2. `make release version=<v> work_item=<n>` on a clean `master` with `gh` logged in: pins the manifest, renames the
    section, commits `<n>: Release <v>` through `make push`, tags `v<v>`, pushes the tag.
-3. `release.yml` guards and publishes; `gh run list --workflow release.yml` watches it. Comment the card with the
-   version and close it.
+3. `release.yml` guards and publishes; `gh run list --workflow release.yml` watches it. Comment the work item
+   with the version and move it to Done.
 
 Details: [Cut a release](cut-a-release.md).

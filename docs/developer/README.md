@@ -12,7 +12,7 @@ push.
 | run the gate, the tests, or read what CI does | [Build and test](build-and-test/README.md) |
 | change the script, an option, the directory listing, or know the layout | [Change](change/README.md) |
 | cut a release | [Release](release/README.md) |
-| commit, or work a card | [Contribute](contribute/README.md) |
+| commit, or take a work item of the board | [Contribute](contribute/README.md) |
 | add or change documentation, and keep the gate green | [Documentation](documentation/README.md) |
 | read the build record, the directory record and the feature records | [Evidence](evidence/README.md) |
 
@@ -33,13 +33,13 @@ scanner. [Change](change/README.md) has each surface.
 
 ## Release
 
-`make release version=<v> card=<n>` pins, renames the changelog section, commits and tags; the workflow
+`make release version=<v> work_item=<n>` pins, renames the changelog section, commits and tags; the workflow
 publishes. [Release](release/README.md) includes the recovery path.
 
 ## Contribute
 
-`<card>: <Imperative summary>` through `make push`, merges only, a Trello card per piece of work.
-[Contribute](contribute/README.md) also covers closing the card.
+`<work item>: <Imperative summary>` through `make push`, merges only, a work item of the team's Brigade Board per
+piece of work. [Contribute](contribute/README.md) also covers taking one to Done.
 
 ## Documentation
 

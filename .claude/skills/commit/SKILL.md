@@ -1,7 +1,7 @@
 ---
 name: commit
-description: Commit, pull, and push changes using make push with a card-prefixed message
-argument-hint: "[card]"
+description: Commit, pull, and push changes using make push with a message prefixed by the work item's number
+argument-hint: "[work item number]"
 ---
 
 Commit the current working tree changes using this project's `make push` target.
@@ -9,12 +9,12 @@ Commit the current working tree changes using this project's `make push` target.
 `make push` = `make commit` + `git push`. `make commit` alone pulls, tests (the documentation gate among the
 tests), checks the plugin tree, stages and commits, but does NOT push — so this skill uses `make push`.
 
-The card number is: $ARGUMENTS
+The work item number is: $ARGUMENTS
 
-## 1. Validate the card number
+## 1. Validate the work item number
 
-If `$ARGUMENTS` is empty or non-numeric, stop and ask the user to provide a numeric Trello card number (e.g.,
-`/commit 45`). Do not proceed.
+If `$ARGUMENTS` is empty or non-numeric, stop and ask the user for the number of the Brigade Board work item the
+change belongs to (e.g., `/commit 272`). Do not proceed.
 
 ## 2. Analyze changes
 
@@ -43,32 +43,24 @@ proceed until they confirm the files are safe.
 
 Based on the changes, write a commit message:
 
-- Format: `<card>: <Message>` (e.g., `45: Append the TL;DR on the final chunk`)
+- Format: `<work item>: <Message>` (e.g., `127: Redesign the documentation around three personas`)
 - One line, under 72 characters when possible
-- Imperative mood, capitalized first word after the card prefix
+- Imperative mood, capitalized first word after the number
 - Summarize the intent (why), not a list of files changed
 - Avoid shell-special characters (quotes, backticks, dollar signs) in the message
 
-## 5. Confirm with the user
+## 5. Execute
 
-Present the full make command that will be executed:
-
-```
-make push "message=<card>: <generated message>"
-```
-
-Ask the user to confirm or provide an edited message. This operation pulls, tests, checks the plugin tree,
-commits and pushes -- never auto-execute.
-
-## 6. Execute
-
-Once confirmed, run exactly:
+Do not ask the user to approve the commit (the owner's ruling for the commit skill, Brigade work item 270,
+2026-11-12, carried to this repository by work item 272). Print the command, then run exactly:
 
 ```
-make push "message=<confirmed message>"
+make push "message=<work item>: <generated message>"
 ```
 
-## 7. Report the result
+This pulls, tests, checks the plugin tree, commits and pushes. The only stops are the ones in steps 1 to 3.
+
+## 6. Report the result
 
 - On success, confirm the commit was pushed.
 - On failure (test failure, plugin-check failure, merge conflict), report the error clearly. Do not retry

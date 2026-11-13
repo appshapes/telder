@@ -1,4 +1,4 @@
-# Fires on a pushed `v*` tag and on nothing else. The tag is pushed by `make release version=X.Y.Z card=<n>`
+# Fires on a pushed `v*` tag and on nothing else. The tag is pushed by `make release version=X.Y.Z work_item=<n>`
 # (scripts/release-prep.sh), and a published tag is never moved. Ported from appshapes/brigade's release.yml and
 # cut down: there are no binaries, so the release is the tag plus its changelog section as notes.
 #
